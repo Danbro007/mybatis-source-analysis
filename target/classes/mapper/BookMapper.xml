@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.danbro.mapper.BookMapper">
+    <cache
+            eviction="FIFO"
+            flushInterval="60000"
+            size="512"
+            readOnly="true"/>
+    <resultMap id="bookMap" type="com.danbro.pojo.Book">
+        <result column="bookname" property="name"/>
+    </resultMap>
+    <select id="getBooks" resultMap="bookMap">
+        select  * from books
+    </select>
+</mapper>

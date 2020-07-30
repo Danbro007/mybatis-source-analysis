@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--引入外部配置源-->
+    <properties resource="database.properties"/>
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+        <!--开启缓存-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+    <!--类的别名-->
+    <typeAliases>
+        <package name="com.danbro.pojo"/>
+        <package name="com.danbro.mapper"/>
+    </typeAliases>
+
+    <!--多环境配置-->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper resource="mapper/BookMapper.xml"/>
+        <mapper resource="mapper/UserMapper.xml"/>
+        <mapper resource="mapper/StudentMapper.xml"/>
+        <mapper resource="mapper/TeacherMapper.xml"/>
+<!--        <mapper class="com.danbro.mapper.TeacherMapper"/>-->
+    </mappers>
+
+</configuration>
