@@ -602,6 +602,7 @@ public class Configuration {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
+    // 判断执行器的类型，通过执行器的类型创建相应类型的执行器。
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
@@ -609,9 +610,11 @@ public class Configuration {
     } else {
       executor = new SimpleExecutor(this, transaction);
     }
+    // 如果开启了缓存则把刚刚创建的执行器添加缓存功能
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    // 给执行器加载插件
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }

@@ -56,6 +56,7 @@ public class MapperMethod {
 
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    // 先判断方法的类型，增删改查
     switch (command.getType()) {
       case INSERT: {
         Object param = method.convertArgsToSqlCommandParam(args);
@@ -73,6 +74,7 @@ public class MapperMethod {
         break;
       }
       case SELECT:
+        // 先判断这个 select 语句返不返回 void 并且有没有结果处理器（比如 ResultMap），如果符合这两个条件则直接执行 sql
         if (method.returnsVoid() && method.hasResultHandler()) {
           executeWithResultHandler(sqlSession, args);
           result = null;
@@ -139,7 +141,9 @@ public class MapperMethod {
 
   private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
+    // 把参数转换成 SQl 命令参数如果有的话
     Object param = method.convertArgsToSqlCommandParam(args);
+    // 判断有没有行数限制既 limit
     if (method.hasRowBounds()) {
       RowBounds rowBounds = method.extractRowBounds(args);
       result = sqlSession.selectList(command.getName(), param, rowBounds);

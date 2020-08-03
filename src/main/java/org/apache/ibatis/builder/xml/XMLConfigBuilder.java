@@ -95,10 +95,11 @@ public class XMLConfigBuilder extends BaseBuilder {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    // 从 configuration 标签开始解析
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
-
+  // 解析配置文件,按标签顺序解析配置文件，解析出的配置放入 configuration 里。
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
@@ -359,18 +360,27 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      // 获取 <mappers> 标签下的所有子节点，然后遍历它们
       for (XNode child : parent.getChildren()) {
+        // 如果子节点的标签类型是 <package> 则获取它的 name 属性，把这个属性放入 mapperRegistry 里
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
         } else {
+          // 说明是 <mapper> 标签，获取相应的 XXXMapper.xml 文件的资源路径，例如：XXX.XXX.XXXMapper.xml
           String resource = child.getStringAttribute("resource");
+          // 获取 url 属性 例如：file://。。。。。
           String url = child.getStringAttribute("url");
+          // 获取 class 属性 例如：XXX.XXX.XXXMapper
           String mapperClass = child.getStringAttribute("class");
+          // 这三种属性只能取一个
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
+            // 读取 XXXMapper.xml 文件并转换成输入流
             InputStream inputStream = Resources.getResourceAsStream(resource);
+            // 创建一个 XML 解析器来解析 XXXMapper.xml 文件
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
+            // 开始解析
             mapperParser.parse();
           } else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);
@@ -378,7 +388,9 @@ public class XMLConfigBuilder extends BaseBuilder {
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
             mapperParser.parse();
           } else if (resource == null && url == null && mapperClass != null) {
+            // 用类加载器加载出 Mapper 接口
             Class<?> mapperInterface = Resources.classForName(mapperClass);
+            // 把 Mapper 接口放入 mapperRegistry
             configuration.addMapper(mapperInterface);
           } else {
             throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");

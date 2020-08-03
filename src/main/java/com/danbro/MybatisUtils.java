@@ -21,6 +21,7 @@ public class MybatisUtils {
         String resource = "mybatis-config.xml";
         InputStream inputStream = null;
         try {
+            // 把配置文件转换成输入流
             inputStream = Resources.getResourceAsStream(resource);
             sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
         } catch (IOException e) {
@@ -29,6 +30,7 @@ public class MybatisUtils {
     }
 
     public static SqlSession getSqlSession() {
+        // 创建一个新的 SqlSession
         return sqlSessionFactory.openSession();
     }
 }

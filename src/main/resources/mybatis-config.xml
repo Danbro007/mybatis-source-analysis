@@ -17,8 +17,17 @@
     </typeAliases>
 
     <!--多环境配置-->
-    <environments default="development">
+    <environments default="test">
         <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+        <environment id="test">
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="${driver}"/>
@@ -34,6 +43,7 @@
         <mapper resource="mapper/UserMapper.xml"/>
         <mapper resource="mapper/StudentMapper.xml"/>
         <mapper resource="mapper/TeacherMapper.xml"/>
+
 <!--        <mapper class="com.danbro.mapper.TeacherMapper"/>-->
     </mappers>
 

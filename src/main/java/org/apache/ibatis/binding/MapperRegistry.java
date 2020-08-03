@@ -42,11 +42,13 @@ public class MapperRegistry {
 
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
+    // 先从 knownMappers 里获取我们指定的 XXXMapper.class 的 Mapper 代理工厂
     final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);
     if (mapperProxyFactory == null) {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
+      // 通过代理工厂返回一个代理对象
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);
@@ -57,13 +59,21 @@ public class MapperRegistry {
     return knownMappers.containsKey(type);
   }
 
+  /**
+   * 添加 Mapper 到 MapperRegistry 里。
+   * @param type 要添加的 Mapper 类型
+   * @param <T>
+   */
   public <T> void addMapper(Class<T> type) {
+    // 先判断 Mapper 是不是接口，如果是则在 MapperRegistry 里看看有没有，如果没有则添加，有的话抛出 BindingException 异常。
     if (type.isInterface()) {
       if (hasMapper(type)) {
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
       }
+      // Mapper 加载成功标志位
       boolean loadCompleted = false;
       try {
+        // 把 Mapper 类型为 key，Mapper 的代理工厂为 value 放入 MapperRegistry。
         knownMappers.put(type, new MapperProxyFactory<>(type));
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the
@@ -73,6 +83,7 @@ public class MapperRegistry {
         loadCompleted = true;
       } finally {
         if (!loadCompleted) {
+          // 如果 loadCompleted 为 false 说明加载失败把这个 Mapper 删除
           knownMappers.remove(type);
         }
       }

@@ -127,10 +127,12 @@ public class MapperAnnotationBuilder {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
       loadXmlResource();
+      // 把 resource 添加到 loadedResources
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
       parseCache();
       parseCacheRef();
+      // 获取我们要解析的接口的所有方法
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {

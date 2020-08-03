@@ -90,14 +90,20 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   public void parse() {
+    // 如果之前没有解析这个则开始解析，解析完成后会把解析的资源名放入一个名为 loadedResources 的 HashSet 里。
     if (!configuration.isResourceLoaded(resource)) {
+      // 从 <mapper> 标签开始解析
       configurationElement(parser.evalNode("/mapper"));
+      // 解析完毕后把这个资源名放入 loadedResources 里，表明已经解析过。
       configuration.addLoadedResource(resource);
+      // 把 Mapper 与 名称空间进行绑定
       bindMapperForNamespace();
     }
-
+    // 执行未完成的 ResultMap
     parsePendingResultMaps();
+    // 执行未完成的 CacheRef
     parsePendingCacheRefs();
+    // 执行未完成的 Statement
     parsePendingStatements();
   }
 
@@ -107,16 +113,25 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void configurationElement(XNode context) {
     try {
+      // 到 context 获取配置元素的名称空间
       String namespace = context.getStringAttribute("namespace");
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
+      // XXXMapper.xml 里的配置解析后都会放入 configuration 里。
       builderAssistant.setCurrentNamespace(namespace);
+      // 读取 <cache-ref> 标签并放入 configuration 的 cacheRefMap 里
+      // <cache-ref>  是引用其它命名空间的缓存配置
       cacheRefElement(context.evalNode("cache-ref"));
+      // <cache> 是该命名空间的缓存配置
       cacheElement(context.evalNode("cache"));
+      // 解析 <parameterMap>
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+      // 解析 <resultMap>
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      // 解析 sql  标签
       sqlElement(context.evalNodes("/mapper/sql"));
+      // 解析 <select>、<insert>、<update> 和 <delete> 标签
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
@@ -419,14 +434,17 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void bindMapperForNamespace() {
+    // 获取名称空间
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
       Class<?> boundType = null;
       try {
+        // 通过名称空间加载出类
         boundType = Resources.classForName(namespace);
       } catch (ClassNotFoundException e) {
         //ignore, bound type is not required
       }
+      // 放入 mapperRegistry 里
       if (boundType != null) {
         if (!configuration.hasMapper(boundType)) {
           // Spring may not know the real resource name so we set a flag

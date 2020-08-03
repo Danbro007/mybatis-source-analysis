@@ -39,12 +39,24 @@ public class RoutingStatementHandler implements StatementHandler {
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
 
     switch (ms.getStatementType()) {
+      /**
+       *  普通的不带参的查询SQL；支持批量更新,批量删除。
+       */
       case STATEMENT:
         delegate = new SimpleStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
         break;
+      /**
+       * 可变参数的SQL,编译一次,执行多次,效率高;
+       * 安全性好，有效防止Sql注入等问题;
+       * 支持批量更新,批量删除;
+       */
       case PREPARED:
         delegate = new PreparedStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
         break;
+      /**
+       * 继承自PreparedStatement,支持带参数的SQL操作;
+       * 支持调用存储过程,提供了对输出和输入/输出参数(INOUT)的支持;
+       */
       case CALLABLE:
         delegate = new CallableStatementHandler(executor, ms, parameter, rowBounds, resultHandler, boundSql);
         break;

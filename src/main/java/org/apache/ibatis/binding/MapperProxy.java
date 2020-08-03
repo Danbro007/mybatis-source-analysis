@@ -73,7 +73,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
     lookupConstructor = lookup;
   }
-
+  // 代理会调用这个方法
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
@@ -89,7 +89,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    // 如果缓存里没有当前 Mapper 的方法则放入缓存里
     final MapperMethod mapperMethod = cachedMapperMethod(method);
+    // 执行代理的 Mapper 方法
     return mapperMethod.execute(sqlSession, args);
   }
 
