@@ -19,7 +19,7 @@ package org.apache.ibatis.session;
  * @author Clinton Begin
  */
 public interface ResultHandler<T> {
-
+  // 对查询的结果进行处理
   void handleResult(ResultContext<? extends T> resultContext);
 
 }

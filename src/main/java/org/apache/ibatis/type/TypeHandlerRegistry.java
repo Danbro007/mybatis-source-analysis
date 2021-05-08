@@ -219,6 +219,7 @@ public final class TypeHandlerRegistry {
     if (ParamMap.class.equals(type)) {
       return null;
     }
+    // 在JDBC里找到对应的类型处理器
     Map<JdbcType, TypeHandler<?>> jdbcHandlerMap = getJdbcHandlerMap(type);
     TypeHandler<?> handler = null;
     if (jdbcHandlerMap != null) {

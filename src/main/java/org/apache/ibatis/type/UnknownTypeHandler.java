@@ -41,6 +41,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType)
       throws SQLException {
+    // 解析出参数的JDBC类型
     TypeHandler handler = resolveTypeHandler(parameter, jdbcType);
     handler.setParameter(ps, i, parameter, jdbcType);
   }
@@ -73,6 +74,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
     if (parameter == null) {
       handler = OBJECT_TYPE_HANDLER;
     } else {
+      // 获取参数的JDBC类型
       handler = typeHandlerRegistry.getTypeHandler(parameter.getClass(), jdbcType);
       // check if handler is null (issue #270)
       if (handler == null || handler instanceof UnknownTypeHandler) {

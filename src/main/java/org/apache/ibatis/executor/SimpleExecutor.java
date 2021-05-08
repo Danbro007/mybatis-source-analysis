@@ -63,7 +63,7 @@ public class SimpleExecutor extends BaseExecutor {
       // 根据 ms 的 Statement 的类型创建不同类型的 StatementHandler （有 STATEMENT、PREPARED 和 CALLABLE 三种类型），这个 StatementHandler 就是委托对象 。StatementHandler 里面封装了执行器、ms、SQL 参数、绑定的 SQL 等
       // 获取到后会遍历所有的插件对这个StatementHandler进行功能的加强,实现方式是JDK的动态代理
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
-      // 进行SQL语句的预处理
+      // 创建了Statement并设置参数
       stmt = prepareStatement(handler, ms.getStatementLog());
       // 执行查询
       return handler.query(stmt, resultHandler);
@@ -86,7 +86,7 @@ public class SimpleExecutor extends BaseExecutor {
   public List<BatchResult> doFlushStatements(boolean isRollback) {
     return Collections.emptyList();
   }
-
+  // 准备Statement
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
     // 获取连接

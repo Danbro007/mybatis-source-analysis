@@ -23,6 +23,7 @@
         <typeAlias type="com.danbro.pojo.Student" alias="Student"/>
         <typeAlias type="com.danbro.pojo.Teacher" alias="Teacher"/>
         <typeAlias type="com.danbro.pojo.Person" alias="Person"/>
+        <typeAlias type="com.danbro.pojo.People" alias="People"/>
     </typeAliases>
 
     <typeHandlers>
@@ -53,10 +54,11 @@
     </environments>
 
     <mappers>
-        <mapper resource="mapper/BookMapper.xml"/>
-        <mapper resource="mapper/UserMapper.xml"/>
-        <mapper resource="mapper/StudentMapper.xml"/>
-        <mapper resource="mapper/TeacherMapper.xml"/>
-        <mapper resource="mapper/PersonMapper.xml"/>
+<!--        <mapper resource="mapper/BookMapper.xml"/>-->
+<!--        <mapper resource="mapper/UserMapper.xml"/>-->
+<!--        <mapper resource="mapper/StudentMapper.xml"/>-->
+<!--        <mapper resource="mapper/TeacherMapper.xml"/>-->
+<!--        <mapper resource="mapper/PersonMapper.xml"/>-->
+        <package name="com.danbro.mapper"/>
     </mappers>
 </configuration>

@@ -39,7 +39,6 @@ public interface StatementHandler {
 
   /**
    *  对 Statement 设置参数，特别是 PreparedStatement 对象。
-
    */
   void parameterize(Statement statement)
       throws SQLException;
@@ -51,13 +50,13 @@ public interface StatementHandler {
       throws SQLException;
 
   /**
-   *  更新
+   *  执行更新
    */
   int update(Statement statement)
       throws SQLException;
 
   /**
-   * 查询
+   * 执行查询
    */
   <E> List<E> query(Statement statement, ResultHandler resultHandler)
       throws SQLException;
@@ -69,7 +68,7 @@ public interface StatementHandler {
       throws SQLException;
 
   /**
-   * 获取 SQL 语句
+   * 获取动态的 SQL 语句
    */
   BoundSql getBoundSql();
 

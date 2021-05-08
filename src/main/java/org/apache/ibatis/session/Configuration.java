@@ -590,7 +590,7 @@ public class Configuration {
   }
 
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
-    // 根据 mappedStatement 的 getStatementType() 获取到 Statement类型，返回不同的 statementHandler
+    // 根据 mappedStatement 的 getStatementType() 获取到 Statement 类型，返回不同的 statementHandler
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
     // 遍历所有的插件，使用JDK动态代理对statementHandler进行功能的加强
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);

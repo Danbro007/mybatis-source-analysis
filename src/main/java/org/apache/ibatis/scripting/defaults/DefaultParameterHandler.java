@@ -74,15 +74,19 @@ public class DefaultParameterHandler implements ParameterHandler {
           Object value;
           // 获取参数名然后获取参数名对应的参数值
           String propertyName = parameterMapping.getProperty();
-          if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
+          // 动态SQL <foreach> 相关
+          // issue #448 ask first for additional params
+          if (boundSql.hasAdditionalParameter(propertyName)) {
             value = boundSql.getAdditionalParameter(propertyName);
           } else if (parameterObject == null) {
             value = null;
           }
           // 如果参数类型处理器注册中心支持这个参数类型则把值赋给 value
+          // 只有一个参数的时候会进入这个判断，多个参数的话是一个ParamMap来存储的，JDBC类型注册中心里没有对应的类型处理
           else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
             value = parameterObject;
           } else {
+            // 处理Map即处理多个参数的
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }

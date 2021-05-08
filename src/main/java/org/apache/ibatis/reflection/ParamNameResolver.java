@@ -28,6 +28,9 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+/**
+ * 参数名解析器
+ */
 public class ParamNameResolver {
 
   private static final String GENERIC_NAME_PREFIX = "param";
@@ -108,19 +111,27 @@ public class ParamNameResolver {
    * </p>
    */
   public Object getNamedParams(Object[] args) {
+    // 参数数量
     final int paramCount = names.size();
+    // 参数为空
     if (args == null || paramCount == 0) {
       return null;
-    } else if (!hasParamAnnotation && paramCount == 1) {
+    }
+    // 处理一个参数，没有@Param注解并且参数只有一个则返回数组的第一个参数
+    else if (!hasParamAnnotation && paramCount == 1) {
       return args[names.firstKey()];
-    } else {
+    }
+    // 处理多个参数
+    else {
       final Map<String, Object> param = new ParamMap<>();
       int i = 0;
+      // 遍历 SortedMap 里的元素，把value和key放入ParamMap里
       for (Map.Entry<Integer, String> entry : names.entrySet()) {
         param.put(entry.getValue(), args[entry.getKey()]);
         // add generic param names (param1, param2, ...)
+        // 把参数名修改为 param1、parma2 。。。
         final String genericParamName = GENERIC_NAME_PREFIX + String.valueOf(i + 1);
-        // ensure not to overwrite parameter named with @Param
+        // ensure not to overwrite parameter named with @Param 确保不覆盖以@Param命名的参数
         if (!names.containsValue(genericParamName)) {
           param.put(genericParamName, args[entry.getKey()]);
         }

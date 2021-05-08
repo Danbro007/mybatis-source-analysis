@@ -34,6 +34,9 @@ import org.apache.ibatis.session.RowBounds;
 
 /**
  * @author Clinton Begin
+ *
+ * 99%使用PreparedStatementHandler，优点是性能较高，能防止SQL注入
+ *
  */
 public class PreparedStatementHandler extends BaseStatementHandler {
 
@@ -77,7 +80,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
   // 这里的 connection 是一个代理对象
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
-    // 获取绑定的 SQL 语句
+    // 获取动态 SQL 语句
     String sql = boundSql.getSql();
     // 获取 id 自增生成器
     if (mappedStatement.getKeyGenerator() instanceof Jdbc3KeyGenerator) {
