@@ -2,6 +2,8 @@ package com.danbro.pojo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @Classname Book
  * @Description TODO
@@ -12,5 +14,5 @@ import lombok.Data;
 public class Book {
     private int id;
     private String name;
-    private int price;
+    private BigDecimal price;
 }

@@ -81,7 +81,7 @@ public interface Cache {
 
   /**
    * Optional. This method is not called by the core.
-   *
+   * 获取缓存大小
    * @return The number of elements stored in the cache (not its capacity).
    */
   int getSize();
@@ -90,7 +90,7 @@ public interface Cache {
    * Optional. As of 3.2.6 this method is no longer called by the core.
    * <p>
    * Any locking needed by the cache must be provided internally by the cache provider.
-   *
+   * 读写锁
    * @return A ReadWriteLock
    */
   default ReadWriteLock getReadWriteLock() {

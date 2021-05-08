@@ -34,11 +34,14 @@ import org.apache.ibatis.io.Resources;
 
 /**
  * @author Clinton Begin
+ *
+ * 别名注册中心
+ *
  */
 public class TypeAliasRegistry {
 
   private final Map<String, Class<?>> typeAliases = new HashMap<>();
-
+  // 加载那些常用的别名
   public TypeAliasRegistry() {
     registerAlias("string", String.class);
 
@@ -108,11 +111,14 @@ public class TypeAliasRegistry {
         return null;
       }
       // issue #748
+      // 把别名转换成英文小写
       String key = string.toLowerCase(Locale.ENGLISH);
       Class<T> value;
+      // 如果别名中心有则返回
       if (typeAliases.containsKey(key)) {
         value = (Class<T>) typeAliases.get(key);
       } else {
+        // 没有则自己通过反射获取，如果当前类加载器中没有则抛出异常
         value = (Class<T>) Resources.classForName(string);
       }
       return value;
@@ -124,9 +130,10 @@ public class TypeAliasRegistry {
   public void registerAliases(String packageName) {
     registerAliases(packageName, Object.class);
   }
-
+  // 按照包名注册进别名注册中心里
   public void registerAliases(String packageName, Class<?> superType) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
+    // 到当前classpath扫描包里的每个类包括子包里的类，并自行测试，测试成功的类才会被留下来。
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
     Set<Class<? extends Class<?>>> typeSet = resolverUtil.getClasses();
     for (Class<?> type : typeSet) {

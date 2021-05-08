@@ -21,6 +21,7 @@ public class TeacherMapperTest {
     @Test
     public void getTeacherById2(){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
+        // 执行代理对象的getTeacherById2()方法
         Teacher teacher = sqlSession.getMapper(TeacherMapper.class).getTeacherById2(1);
         System.out.println(teacher);
     }

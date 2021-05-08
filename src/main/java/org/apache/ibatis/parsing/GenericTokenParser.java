@@ -31,10 +31,12 @@ public class GenericTokenParser {
   }
 
   public String parse(String text) {
+    // 对字符串是否为空进行校验
     if (text == null || text.isEmpty()) {
       return "";
     }
     // search open token
+    // 再判断是否有 ${ 这个字符串
     int start = text.indexOf(openToken);
     if (start == -1) {
       return text;
@@ -74,6 +76,7 @@ public class GenericTokenParser {
           builder.append(src, start, src.length - start);
           offset = src.length;
         } else {
+          // 找到映射的变量对应的属性值 ${driver} --->com.mysql.jdbc.Driver
           builder.append(handler.handleToken(expression.toString()));
           offset = end + closeToken.length();
         }

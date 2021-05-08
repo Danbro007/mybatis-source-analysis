@@ -74,19 +74,27 @@ public class MapperMethod {
         break;
       }
       case SELECT:
-        // 先判断这个 select 语句返不返回 void 并且有没有结果处理器（比如 ResultMap），如果符合这两个条件则直接执行 sql
+        // 如果这个 select 语句返回 void 并且有结果处理器（比如 ResultMap，来映射 java 对象的属性），如果符合这两个条件使用结果处理器来执行 SQL
         if (method.returnsVoid() && method.hasResultHandler()) {
           executeWithResultHandler(sqlSession, args);
           result = null;
+          // 返回多个结果
         } else if (method.returnsMany()) {
           result = executeForMany(sqlSession, args);
+          // 返回 Map 类型
         } else if (method.returnsMap()) {
           result = executeForMap(sqlSession, args);
-        } else if (method.returnsCursor()) {
+        }
+        // 返回光标对象
+        else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
         } else {
+          // 把参数转换成 SQL 参数
           Object param = method.convertArgsToSqlCommandParam(args);
+          // 这里的 selectOne() 其实还是调用 selectList() 方法，只不过取第一个元素，如果元素数量大于 1 则抛出异常。
+          // 最终还是有SqlSession来执行最终的查询
           result = sqlSession.selectOne(command.getName(), param);
+          // 返回的结果是Optional类型则到Optional获取查询结果
           if (method.returnsOptional()
               && (result == null || !method.getReturnType().equals(result.getClass()))) {
             result = Optional.ofNullable(result);
@@ -138,12 +146,12 @@ public class MapperMethod {
       sqlSession.select(command.getName(), param, method.extractResultHandler(args));
     }
   }
-
+  // 来执行返回多个结果的 SQL
   private <E> Object executeForMany(SqlSession sqlSession, Object[] args) {
     List<E> result;
     // 把参数转换成 SQl 命令参数如果有的话
     Object param = method.convertArgsToSqlCommandParam(args);
-    // 判断有没有行数限制既 limit
+    // 判断有没有行数限制既需要不需要分页
     if (method.hasRowBounds()) {
       RowBounds rowBounds = method.extractRowBounds(args);
       result = sqlSession.selectList(command.getName(), param, rowBounds);
@@ -221,8 +229,9 @@ public class MapperMethod {
   }
 
   public static class SqlCommand {
-
+    // 接口的全限定名+方法
     private final String name;
+    // SQL的类型
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
@@ -277,7 +286,7 @@ public class MapperMethod {
   }
 
   public static class MethodSignature {
-
+    // 返回类型
     private final boolean returnsMany;
     private final boolean returnsMap;
     private final boolean returnsVoid;
@@ -287,6 +296,7 @@ public class MapperMethod {
     private final String mapKey;
     private final Integer resultHandlerIndex;
     private final Integer rowBoundsIndex;
+    // 参数名解析器
     private final ParamNameResolver paramNameResolver;
 
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {

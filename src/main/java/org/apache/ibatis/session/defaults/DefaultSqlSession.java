@@ -73,6 +73,7 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.
+    // 如果查询的结果是0或者多个则抛出异常
     List<T> list = this.selectList(statement, parameter);
     if (list.size() == 1) {
       return list.get(0);
@@ -143,8 +144,9 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
-      // 获取映射语句
+      // 通过 Mapper 接口的完全限定名+方法 为 key 获取对应 MappedStatement（接口的方法）
       MappedStatement ms = configuration.getMappedStatement(statement);
+      // 执行器来执行查询语句
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);
@@ -317,7 +319,8 @@ public class DefaultSqlSession implements SqlSession {
   private boolean isCommitOrRollbackRequired(boolean force) {
     return (!autoCommit && dirty) || force;
   }
-
+  // 包装集合,如果对象 实现了 Collection、List 接口或者是数组则放入创建的 StrictMap 里。
+  // StrictMap 基本和 HashMap 一样，就重写了 get() 方法,当要 get 的 key 不存在时会打印提示当前 Map 里所有的 key
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<>();
@@ -338,6 +341,7 @@ public class DefaultSqlSession implements SqlSession {
 
     private static final long serialVersionUID = -5741767162221585340L;
 
+    // 重写了 HashMap 的 get() 方法，当 key 不存在 Map 里时会抛出异常，打印出当前 Map 里已存的 Key 。
     @Override
     public V get(Object key) {
       if (!super.containsKey(key)) {

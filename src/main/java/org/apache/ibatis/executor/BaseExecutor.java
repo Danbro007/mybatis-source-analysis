@@ -50,21 +50,26 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
 public abstract class BaseExecutor implements Executor {
 
   private static final Log log = LogFactory.getLog(BaseExecutor.class);
-
+  // 事务对象，提供了事务的开启、关闭、提交操作。
   protected Transaction transaction;
+  // 封装具体的执行器
   protected Executor wrapper;
-
+  // 懒加载
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  // 一级缓存，用于缓存该 Executor 对象查询结果集映射得到的结果对象.
   protected PerpetualCache localCache;
+  // 一级缓存 用于缓存输出类型的参数
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
-
+  // 用来记录嵌套查询的层数
   protected int queryStack;
+  // 执行器是否关闭
   private boolean closed;
 
   protected BaseExecutor(Configuration configuration, Transaction transaction) {
     this.transaction = transaction;
     this.deferredLoads = new ConcurrentLinkedQueue<>();
+    // 一级缓存
     this.localCache = new PerpetualCache("LocalCache");
     this.localOutputParameterCache = new PerpetualCache("LocalOutputParameterCache");
     this.closed = false;
@@ -107,12 +112,16 @@ public abstract class BaseExecutor implements Executor {
     return closed;
   }
 
+  /**
+   * 执行更新操作会清空一次缓存
+   */
   @Override
   public int update(MappedStatement ms, Object parameter) throws SQLException {
     ErrorContext.instance().resource(ms.getResource()).activity("executing an update").object(ms.getId());
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // （缓存清空的场景3）清空一级缓存
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
@@ -132,6 +141,7 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
     BoundSql boundSql = ms.getBoundSql(parameter);
+    // 创建一个缓存对象 CacheKey
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
   }
@@ -143,30 +153,35 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // （缓存清空场景1）如果是父查询（不是嵌套查询或者子查询）并且开启清空缓存则把一级缓存清空
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
       clearLocalCache();
     }
     List<E> list;
     try {
+      // 增加查询层数（子查询）
       queryStack++;
-      // 如果结果处理器是 null 则尝试到本地缓存获取查询结果
+      // 如果结果处理器为null会先尝试到一级缓存查找
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
-        // 处理从本地缓存的输出参数
+        // 针对存储过程的调用处理
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
-        // 到数据库查询数据
+        // 到数据库查询数据并把得到的结果集映射到结果集对象上然后返回
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
+      // 当前查询完成，查询层数减1
       queryStack--;
     }
+    // 延迟加载的相关部分
     if (queryStack == 0) {
       for (DeferredLoad deferredLoad : deferredLoads) {
         deferredLoad.load();
       }
       // issue #601
       deferredLoads.clear();
+      // （缓存清空的场景2）如果是 STATEMENT 级别的会清空缓存，即STATEMENT级别的访问不能共享缓存，但是在嵌套查询里还是能命中缓存的。
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
         clearLocalCache();
@@ -199,14 +214,21 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 创建一个 CacheKey 对象
     CacheKey cacheKey = new CacheKey();
+    // 添加 ms 的 id cacheKey
     cacheKey.update(ms.getId());
+    // 添加 offset 到 cacheKey
     cacheKey.update(rowBounds.getOffset());
+    // 添加 limit 到 cacheKey
     cacheKey.update(rowBounds.getLimit());
+    // 添加映射的 SQL 语句
     cacheKey.update(boundSql.getSql());
+  // 获取映射参数列表
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+    // 获取类型处理器注册中心
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
-    // mimic DefaultParameterHandler logic
+    // 过滤掉 OUT 类型的参数，然后把参数的值放入 cacheKey 中
     for (ParameterMapping parameterMapping : parameterMappings) {
       if (parameterMapping.getMode() != ParameterMode.OUT) {
         Object value;
@@ -224,6 +246,7 @@ public abstract class BaseExecutor implements Executor {
         cacheKey.update(value);
       }
     }
+    // 缓存当前环境的 id
     if (configuration.getEnvironment() != null) {
       // issue #176
       cacheKey.update(configuration.getEnvironment().getId());
@@ -236,18 +259,22 @@ public abstract class BaseExecutor implements Executor {
     return localCache.getObject(key) != null;
   }
 
+  // 缓存清空场景4
   @Override
   public void commit(boolean required) throws SQLException {
     if (closed) {
       throw new ExecutorException("Cannot commit, transaction is already closed");
     }
+    // 清空一级缓存
     clearLocalCache();
+    // 清空statement
     flushStatements();
     if (required) {
+      // 事务提交
       transaction.commit();
     }
   }
-
+  // 缓存清空的场景5
   @Override
   public void rollback(boolean required) throws SQLException {
     if (!closed) {
@@ -319,17 +346,25 @@ public abstract class BaseExecutor implements Executor {
       }
     }
   }
-
+  /**
+   *
+   *  到数据库执行查询，如果开启了一级缓存则把查询结果放到一级缓存里
+    */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
+    // 先到缓存里放一个 key，value 是一个临时占位标志。
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
-      // 执行到数据库查询
+      // 到数据库查询得到结果集，然后把结果集映射到结果集对象上。
+      // 具体的查询方法是由 BaseExecutor 的子类来实现的，BaseExecutor 只提供模板方法。
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
+      // 清除 key 对应的缓存
       localCache.removeObject(key);
     }
+    // 查询结果放入缓存里
     localCache.putObject(key, list);
+    // 如果是 CALLABLE 类型的 Statement 则把 key 和参数放入 localOutputParameterCache 缓存里。
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);
     }

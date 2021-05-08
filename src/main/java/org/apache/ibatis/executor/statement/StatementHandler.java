@@ -27,29 +27,55 @@ import org.apache.ibatis.session.ResultHandler;
 
 /**
  * @author Clinton Begin
+ *
+ * 复制与数据库的操作
  */
 public interface StatementHandler {
-
+  /**
+   * 获取 Statement 对象，这个方法会通过 connection 创建 Statement 对象。
+   */
   Statement prepare(Connection connection, Integer transactionTimeout)
       throws SQLException;
 
+  /**
+   *  对 Statement 设置参数，特别是 PreparedStatement 对象。
+
+   */
   void parameterize(Statement statement)
       throws SQLException;
 
+  /**
+   * 批量处理 SQL
+   */
   void batch(Statement statement)
       throws SQLException;
 
+  /**
+   *  更新
+   */
   int update(Statement statement)
       throws SQLException;
 
+  /**
+   * 查询
+   */
   <E> List<E> query(Statement statement, ResultHandler resultHandler)
       throws SQLException;
 
+  /**
+   *  查询返回游标对象
+   */
   <E> Cursor<E> queryCursor(Statement statement)
       throws SQLException;
 
+  /**
+   * 获取 SQL 语句
+   */
   BoundSql getBoundSql();
 
+  /**
+   * 获取参数处理器
+   */
   ParameterHandler getParameterHandler();
 
 }

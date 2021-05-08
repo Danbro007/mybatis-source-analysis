@@ -115,8 +115,9 @@ public class MapperAnnotationBuilder {
     SQL_PROVIDER_ANNOTATION_TYPES.add(UpdateProvider.class);
     SQL_PROVIDER_ANNOTATION_TYPES.add(DeleteProvider.class);
   }
-
+  // 配置上 mapper 资源路径，mapper构建助手，configuration 对象，mapper 类型
   public MapperAnnotationBuilder(Configuration configuration, Class<?> type) {
+    // 把 mapper 的 . 替换成 / ，比如把com.danbro.mapper.BookMapper 替换成 com/danbro/mapper/BookMapper.java (best guess)
     String resource = type.getName().replace('.', '/') + ".java (best guess)";
     this.assistant = new MapperBuilderAssistant(configuration, resource);
     this.configuration = configuration;
@@ -127,12 +128,12 @@ public class MapperAnnotationBuilder {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
       loadXmlResource();
-      // 把 resource 添加到 loadedResources
+      // 把 resource 添加到 loadedResources，既mapper.xml标记为已读取
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
       parseCache();
       parseCacheRef();
-      // 获取我们要解析的接口的所有方法
+      // 获取我们要解析的mapper的所有方法
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {
@@ -167,10 +168,16 @@ public class MapperAnnotationBuilder {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
     // this flag is set at XMLMapperBuilder#bindMapperForNamespace
+    // Spring不知道真实的资源名，所以我们检查一个标志位，这个标志位能防止读取一个资源被读取两次，这个标志位设置在 bindMapperForNamespace() 方法里
+    // 如果之前读取过会进入下面步骤
     if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
+      // 通过 namespace 拼接出mapper.xml文件路径
+      // 比如把 com.danbro.mapper.BookMapper 拼接成 com/danbro/mapper/BookMapper.xml
       String xmlResource = type.getName().replace('.', '/') + ".xml";
       // #1347
+      // 把xml文件读取成输入流
       InputStream inputStream = type.getResourceAsStream("/" + xmlResource);
+      // 没有在模块中查询到 mapper.xml 文件，所以到 classpath 查找
       if (inputStream == null) {
         // Search XML mapper that is not in the module but in the classpath.
         try {
@@ -179,6 +186,7 @@ public class MapperAnnotationBuilder {
           // ignore, resource is not required
         }
       }
+      // 解析 mapper.xml 文件
       if (inputStream != null) {
         XMLMapperBuilder xmlParser = new XMLMapperBuilder(inputStream, assistant.getConfiguration(), xmlResource, configuration.getSqlFragments(), type.getName());
         xmlParser.parse();
@@ -297,10 +305,12 @@ public class MapperAnnotationBuilder {
     }
     return null;
   }
-
+  // 解析 Statement
   void parseStatement(Method method) {
+    // 方法参数的类型
     Class<?> parameterTypeClass = getParameterType(method);
     LanguageDriver languageDriver = getLanguageDriver(method);
+    // 从注解获取动态sql
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
       Options options = method.getAnnotation(Options.class);

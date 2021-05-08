@@ -4,23 +4,85 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.danbro.mapper.UserMapper">
-
+    <cache/>
     <insert id="insertUser" parameterType="User">
-        insert into mybatis.user (name,pwd) values(#{name},#{pwd})
+        insert into user (id,name,password,age,deleteFlag) values(#{id},#{name},#{password},#{age},#{deleteFlag})
+        <!--插入数据完毕后返回主键-->
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID() as id
+        </selectKey>
     </insert>
     <update id="updateUser" parameterType="User">
-        update mybatis.user set name = #{name},pwd = #{pwd} where id=#{id}
+        update user
+        set name     = #{name},
+            password = #{password}
+        where id = #{id}
     </update>
     <delete id="deleteUser" parameterType="int">
-        delete from mybatis.user where id = #{id}
+        delete
+        from user
+        where id = #{id}
     </delete>
     <select id="getUsers" resultType="User">
-        select * from mybatis.user
+        select *
+        from user
     </select>
     <select id="getUserById" parameterType="int" resultType="User">
-        select  * from mybatis.user where  id = #{id}
+        select *
+        from user
+        where id = #{id}
     </select>
     <select id="getUsersByLikeName" resultType="User">
-        select * from mybatis.user where name like concat( '%' , #{name} , '%' )
+        select *
+        from user
+        where name like concat('%', #{name}, '%')
     </select>
+    <select id="findUserById" resultType="User">
+        select * from user
+        <where>
+            <if test="id != null">
+                id=#{id}
+            </if>
+            and deleteFlag=0
+        </where>
+    </select>
+    <!--set标签的动态SQL语句-->
+    <!--    <update id="updateUserById" parameterType="User">-->
+    <!--        update user-->
+    <!--        <set>-->
+    <!--            <if test="name != null">name=#{name}</if>-->
+    <!--            <if test="password != null">password=#{password}</if>-->
+    <!--            <if test="age != null">age=#{age}</if>-->
+    <!--        </set>-->
+    <!--        <where>-->
+    <!--            <if test="id!=null">-->
+    <!--                id=#{id}-->
+    <!--            </if>-->
+    <!--        </where>-->
+    <!--    </update>-->
+    <!--使用trim标签-->
+    <update id="updateUserById" parameterType="User">
+        update user
+        <trim prefix="set" prefixOverrides=",">
+            <if test="name != null">name=#{name}</if>
+            <if test="password != null">password=#{password}</if>
+            <if test="age != null">age=#{age}</if>
+        </trim>
+        <where>
+            <if test="id!=null">
+                id=#{id}
+            </if>
+        </where>
+    </update>
+
+    <select id="getTeacherListInIdList" resultType="Teacher">
+        select * from teacher where id in
+        <!--把 in 条件拼接为 (1,2)-->
+        <foreach item="id" index="index" collection="list"
+                 open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <!--设置二级缓存的内存淘汰策略-->
+<!--    <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true"/>-->
 </mapper>

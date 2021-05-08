@@ -1,6 +1,9 @@
 package com.danbro.pojo;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
 
 /**
  * @Classname User
@@ -9,8 +12,11 @@ import lombok.Data;
  * @Author Danrbo
  */
 @Data
-public class User {
+@Accessors(chain = true)
+public class User implements Serializable {
     private int id;
     private String name;
-    private String pwd;
+    private String password;
+    private Integer age;
+    private int deleteFlag;
 }

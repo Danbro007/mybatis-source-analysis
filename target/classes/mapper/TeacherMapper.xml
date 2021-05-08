@@ -5,16 +5,23 @@
 <mapper namespace="com.danbro.mapper.TeacherMapper">
 
     <select id="getTeacherById2" resultMap="TeacherStudent">
-        SELECT t.id as tid ,t.name as tname,s.name as sname,s.id as sid from student  s RIGHT JOIN teacher t on tid = s.tid where tid = #{id}
+        SELECT t.id   as tid,
+               t.name as tname,
+               s.name as sname,
+               s.id   as sid,
+               s.tid  as stid
+        from student s
+                 LEFT JOIN teacher t on t.id = s.tid
+        where tid = #{id}
     </select>
 
     <resultMap id="TeacherStudent" type="Teacher">
-        <result column="tid" property="id"/>
+        <id column="tid" property="id"/>
         <result column="tname" property="name"/>
         <collection property="students" ofType="Student">
-            <result column="sid" property="id"/>
-            <result column="tid" property="tid"/>
+            <id column="sid" property="id"/>
             <result column="sname" property="name"/>
+            <result column="stid" property="tid"/>
         </collection>
     </resultMap>
 </mapper>

@@ -22,24 +22,29 @@ import org.apache.ibatis.cache.decorators.TransactionalCache;
 
 /**
  * @author Clinton Begin
+ *
+ * 作用域为Session
+ *
  */
 public class TransactionalCacheManager {
 
+  // 存储事务提交前的缓存，存储暂存空间。
   private final Map<Cache, TransactionalCache> transactionalCaches = new HashMap<>();
 
   public void clear(Cache cache) {
     getTransactionalCache(cache).clear();
   }
-
+  // 到暂存区获取二级缓存的地址然后到二级缓存获取数据
   public Object getObject(Cache cache, CacheKey key) {
     return getTransactionalCache(cache).getObject(key);
   }
-
+  // 把数据放到暂存区内
   public void putObject(Cache cache, CacheKey key, Object value) {
     getTransactionalCache(cache).putObject(key, value);
   }
 
   public void commit() {
+    // 遍历缓存暂存区并把缓存的数据提交到二级缓存
     for (TransactionalCache txCache : transactionalCaches.values()) {
       txCache.commit();
     }

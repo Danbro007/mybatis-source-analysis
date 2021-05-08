@@ -33,4 +33,9 @@ public class MybatisUtils {
         // 创建一个新的 SqlSession
         return sqlSessionFactory.openSession();
     }
+
+    public static SqlSession getSqlSession(boolean autoCommit) {
+        // 创建一个新的 SqlSession
+        return sqlSessionFactory.openSession(autoCommit);
+    }
 }

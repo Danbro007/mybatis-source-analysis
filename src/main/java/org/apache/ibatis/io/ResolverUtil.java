@@ -209,6 +209,9 @@ public class ResolverUtil<T> {
    * true the class is retained.  Accumulated classes can be fetched by calling
    * {@link #getClasses()}.
    *
+   * 到当前包开始扫描每一个类，包括子包。被扫描到的每个类都将会提供测试，如果测试结果是true则这个类会被留下。
+   * 可以通过调用 getClasses() 方法来获取到被留下的类。默认实现是判断当前类是不是Object的子类
+   *
    * @param test an instance of {@link Test} that will be used to filter classes
    * @param packageName the name of the package from which to start scanning for
    *        classes, e.g. {@code net.sourceforge.stripes}

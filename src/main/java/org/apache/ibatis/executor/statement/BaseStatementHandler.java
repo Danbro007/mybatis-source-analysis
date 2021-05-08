@@ -65,8 +65,9 @@ public abstract class BaseStatementHandler implements StatementHandler {
     }
 
     this.boundSql = boundSql;
-
+    // 参数处理器
     this.parameterHandler = configuration.newParameterHandler(mappedStatement, parameterObject, boundSql);
+    // 结果集处理器
     this.resultSetHandler = configuration.newResultSetHandler(executor, mappedStatement, rowBounds, parameterHandler, resultHandler, boundSql);
   }
 
@@ -85,8 +86,12 @@ public abstract class BaseStatementHandler implements StatementHandler {
     ErrorContext.instance().sql(boundSql.getSql());
     Statement statement = null;
     try {
+      // 返回一个支持预处理的 prepareStatement 对象
       statement = instantiateStatement(connection);
+      // 设置查询超时时间
       setStatementTimeout(statement, transactionTimeout);
+      // 设置查询的数量，优化查询速度。比如不设置的话默认是一次性全部查询出，如果得到的结果很多会造成 OOM，如果设置查询的数量
+      // 设置每次查出多少条数据，之后再执行next方法，查取下一批数据，这样每次查出一点，处理一点，就不容易造成OOM问题了。
       setFetchSize(statement);
       return statement;
     } catch (SQLException e) {

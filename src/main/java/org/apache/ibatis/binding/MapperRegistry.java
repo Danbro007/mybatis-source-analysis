@@ -48,7 +48,7 @@ public class MapperRegistry {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
-      // 通过代理工厂返回一个代理对象
+      // 通过代理工厂返回一个 Mapper 代理对象
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);
@@ -65,7 +65,8 @@ public class MapperRegistry {
    * @param <T>
    */
   public <T> void addMapper(Class<T> type) {
-    // 先判断 Mapper 是不是接口，如果是则在 MapperRegistry 里看看有没有，如果没有则添加，有的话抛出 BindingException 异常。
+    // 先判断 Mapper 是不是接口，如果是则在 MapperRegistry 里看看有没有，
+    // 如果没有则添加，有的话抛出 BindingException 异常表示已经在Mapper注册中心中。
     if (type.isInterface()) {
       if (hasMapper(type)) {
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
@@ -74,10 +75,12 @@ public class MapperRegistry {
       boolean loadCompleted = false;
       try {
         // 把 Mapper 类型为 key，Mapper 的代理工厂为 value 放入 MapperRegistry。
+        // MapperProxyFactory 就只有一个成员变量即你要代理的接口
         knownMappers.put(type, new MapperProxyFactory<>(type));
         // It's important that the type is added before the parser is run
         // otherwise the binding may automatically be attempted by the
         // mapper parser. If the type is already known, it won't try.
+        //重要的是，必须在运行解析器之前添加类型，否则映射器解析器可能会自动尝试进行绑定。如果类型是已知的，则不会尝试。
         MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
         parser.parse();
         loadCompleted = true;

@@ -304,7 +304,9 @@ public class XNode {
   public Properties getChildrenAsProperties() {
     Properties properties = new Properties();
     for (XNode child : getChildren()) {
+      // 属性名
       String name = child.getStringAttribute("name");
+      // 属性值
       String value = child.getStringAttribute("value");
       if (name != null && value != null) {
         properties.setProperty(name, value);
@@ -359,7 +361,7 @@ public class XNode {
       builder.append("    ");
     }
   }
-
+  // 解析 xml 的property
   private Properties parseAttributes(Node n) {
     Properties attributes = new Properties();
     NamedNodeMap attributeNodes = n.getAttributes();

@@ -36,6 +36,7 @@ public class RoutingStatementHandler implements StatementHandler {
 
   private final StatementHandler delegate;
 
+  // 根据 ms 的 Statement 类型路由到不同的 StatementHandler ，然后赋给委托对象 delegate。
   public RoutingStatementHandler(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
 
     switch (ms.getStatementType()) {

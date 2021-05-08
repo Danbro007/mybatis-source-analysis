@@ -19,5 +19,19 @@ package org.apache.ibatis.mapping;
  * @author Clinton Begin
  */
 public enum StatementType {
-  STATEMENT, PREPARED, CALLABLE
+  /**
+   * 普通的不带参的查询SQL；支持批量更新,批量删除;
+   */
+  STATEMENT,
+  /**
+   * 可变参数的SQL,编译一次,执行多次,效率高;
+   * 安全性好，有效防止Sql注入等问题;
+   * 支持批量更新,批量删除;
+   */
+  PREPARED,
+  /**
+   * 继承自PreparedStatement,支持带参数的SQL操作;
+   * 支持调用存储过程,提供了对输出和输入/输出参数(INOUT)的支持;
+   */
+  CALLABLE
 }

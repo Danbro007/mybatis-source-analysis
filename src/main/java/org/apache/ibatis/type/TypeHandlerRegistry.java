@@ -62,6 +62,7 @@ public final class TypeHandlerRegistry {
 
   private Class<? extends TypeHandler> defaultEnumTypeHandler = EnumTypeHandler.class;
 
+  // 注册默认的typeHandler
   public TypeHandlerRegistry() {
     register(Boolean.class, new BooleanTypeHandler());
     register(boolean.class, new BooleanTypeHandler());
@@ -316,6 +317,7 @@ public final class TypeHandlerRegistry {
   // Only handler
 
   @SuppressWarnings("unchecked")
+  // 注册typeHandler的核心方法
   public <T> void register(TypeHandler<T> typeHandler) {
     boolean mappedTypeFound = false;
     MappedTypes mappedTypes = typeHandler.getClass().getAnnotation(MappedTypes.class);
@@ -346,7 +348,9 @@ public final class TypeHandlerRegistry {
     register((Type) javaType, typeHandler);
   }
 
+  // 配置了typeHandler和javaType
   private <T> void register(Type javaType, TypeHandler<? extends T> typeHandler) {
+    // 获取@MappedJdbcTypes注解上关联的jdbcType，遍历这些jdbcType进行注册
     MappedJdbcTypes mappedJdbcTypes = typeHandler.getClass().getAnnotation(MappedJdbcTypes.class);
     if (mappedJdbcTypes != null) {
       for (JdbcType handledJdbcType : mappedJdbcTypes.value()) {
@@ -387,9 +391,11 @@ public final class TypeHandlerRegistry {
   //
 
   // Only handler type
-
+  // 只配置了 typeHandler,没有配置 javaType和JDBCType
   public void register(Class<?> typeHandlerClass) {
     boolean mappedTypeFound = false;
+    // 在自定义typeHandler的时候，可以加上注解MappedTypes 去指定关联的javaType
+    // 获取typeHandler上 @MappedTypes 注解的value数组，然后遍历这个数组进行注册
     MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);
     if (mappedTypes != null) {
       for (Class<?> javaTypeClass : mappedTypes.value()) {
@@ -397,6 +403,7 @@ public final class TypeHandlerRegistry {
         mappedTypeFound = true;
       }
     }
+    // 如果@MappedTypes上的javatype为空则把typeHandler的实例当做key注册进去
     if (!mappedTypeFound) {
       register(getInstance(null, typeHandlerClass));
     }
@@ -441,13 +448,16 @@ public final class TypeHandlerRegistry {
   }
 
   // scan
-
+  // 到指定的包里扫描自定义的handler并执行注册
   public void register(String packageName) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
+    // 扫描包里所有的类，只留下是TypeHandler接口实现类的类
     resolverUtil.find(new ResolverUtil.IsA(TypeHandler.class), packageName);
+    // 获取实现了TypeHandler接口的实现类
     Set<Class<? extends Class<?>>> handlerSet = resolverUtil.getClasses();
     for (Class<?> type : handlerSet) {
       //Ignore inner classes and interfaces (including package-info.java) and abstract classes
+      // 只要类型不是匿名类、接口和抽象类的就能注册
       if (!type.isAnonymousClass() && !type.isInterface() && !Modifier.isAbstract(type.getModifiers())) {
         register(type);
       }
@@ -458,6 +468,8 @@ public final class TypeHandlerRegistry {
 
   /**
    * @since 3.2.2
+   *
+   * 获取所有已注册的typeHandler
    */
   public Collection<TypeHandler<?>> getTypeHandlers() {
     return Collections.unmodifiableCollection(allTypeHandlersMap.values());

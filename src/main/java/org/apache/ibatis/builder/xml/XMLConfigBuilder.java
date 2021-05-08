@@ -90,32 +90,47 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.parser = parser;
   }
 
+  /**
+   * 解析配置文件
+   * @return
+   */
   public Configuration parse() {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
-    // 从 configuration 标签开始解析
+    // 从 <configuration> 标签开始解析
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
-  // 解析配置文件,按标签顺序解析配置文件，解析出的配置放入 configuration 里。
+  // 解析配置文件,按标签顺序解析配置文件，解析出的配置放入 configuration 对象里。
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+      // 解析 <properties> 标签即外部配置源
       propertiesElement(root.evalNode("properties"));
+      // 解析<settings>标签
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
+      // 加载自定义的日志配置
       loadCustomLogImpl(settings);
+      // 解析 <typeAliases> 标签，遍历包的别名把别名放入别名注册中心里
       typeAliasesElement(root.evalNode("typeAliases"));
+      // 解析 <plugins> 标签，并实例化每个插件，然后放入 configuration 对象中。
       pluginElement(root.evalNode("plugins"));
+      // 解析 <objectFactory> 标签，并实例化
       objectFactoryElement(root.evalNode("objectFactory"));
+      // 解析 <objectWrapperFactory> 标签并实例化它
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+      // 解析 <reflectorFactory> 标签并实例化
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+      // 加载配置
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      // 解析 <environments> 标签
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      // 解析<typeHandlers> 即下面的子标签<typeHandler>
       typeHandlerElement(root.evalNode("typeHandlers"));
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
@@ -156,17 +171,26 @@ public class XMLConfigBuilder extends BaseBuilder {
     Class<? extends Log> logImpl = resolveClass(props.getProperty("logImpl"));
     configuration.setLogImpl(logImpl);
   }
-
+  // 解析别名，有两种方式
+  // 1、给包名取别名，把包名注册进别名注册中心
+  // 2、给类取别名
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
+      // 遍历 <typeAliases> 里每个元素
       for (XNode child : parent.getChildren()) {
+        // 解析 <package> 标签，即给包取别名
         if ("package".equals(child.getName())) {
+          // 获取包的别名
           String typeAliasPackage = child.getStringAttribute("name");
+          // 把 package 的别名注册进别名注册中心里
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
         } else {
+          // 解析 <typeAlias> 标签，即给类取别名
           String alias = child.getStringAttribute("alias");
+          // 类的类限定名
           String type = child.getStringAttribute("type");
           try {
+            // 通过Class类型注册到别名注册中心
             Class<?> clazz = Resources.classForName(type);
             if (alias == null) {
               typeAliasRegistry.registerAlias(clazz);
@@ -181,6 +205,7 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  // 遍历xml文件里的所有的插件，然后通过发射实例化并把实例化后的插件放入 configuration 对象中。
   private void pluginElement(XNode parent) throws Exception {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
@@ -236,6 +261,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       if (vars != null) {
         defaults.putAll(vars);
       }
+      // 把 <properties> 标签里的属性和属性值解析出来放入解析器中
       parser.setVariables(defaults);
       configuration.setVariables(defaults);
     }
@@ -273,17 +299,24 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
+        // 解析出 default 的属性值，看默认的是哪个environment
         environment = context.getStringAttribute("default");
       }
       for (XNode child : context.getChildren()) {
+        // 获取 environment 的 id
         String id = child.getStringAttribute("id");
+        // 如果是默认的environment则会进入事务管理器和数据源的配置步骤
         if (isSpecifiedEnvironment(id)) {
+          // 解析出 <transactionManager> 标签并实例化
+          //事务， mybatis有两种：JDBC 和 MANAGED, 配置为JDBC则直接使用JDBC的事务，配置为MANAGED则是将事务托管给容器，
           TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
+          // 解析出<dataSource> 标签并实例化
           DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
           DataSource dataSource = dsFactory.getDataSource();
           Environment.Builder environmentBuilder = new Environment.Builder(id)
               .transactionFactory(txFactory)
               .dataSource(dataSource);
+          // 配置环境给 configuration 对象
           configuration.setEnvironment(environmentBuilder.build());
         }
       }
@@ -322,9 +355,13 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private DataSourceFactory dataSourceElement(XNode context) throws Exception {
     if (context != null) {
+      // datasource 连接池的类型
       String type = context.getStringAttribute("type");
+      // 获取到 DataSource 的属性值
       Properties props = context.getChildrenAsProperties();
+      // 反射出 DataSourceFactory
       DataSourceFactory factory = (DataSourceFactory) resolveClass(type).getDeclaredConstructor().newInstance();
+      // 给 DataSourceFactory 设置属性
       factory.setProperties(props);
       return factory;
     }
@@ -334,17 +371,23 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void typeHandlerElement(XNode parent) {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+        // <package> 标签
         if ("package".equals(child.getName())) {
+          // 获取包名
           String typeHandlerPackage = child.getStringAttribute("name");
           typeHandlerRegistry.register(typeHandlerPackage);
         } else {
           String javaTypeName = child.getStringAttribute("javaType");
           String jdbcTypeName = child.getStringAttribute("jdbcType");
           String handlerTypeName = child.getStringAttribute("handler");
+          // 解析出java类
           Class<?> javaTypeClass = resolveClass(javaTypeName);
+          // 解析出JDBC类型名
           JdbcType jdbcType = resolveJdbcType(jdbcTypeName);
+          // 解析出要使用的 handlerType 类型
           Class<?> typeHandlerClass = resolveClass(handlerTypeName);
           if (javaTypeClass != null) {
+            // 执行注册
             if (jdbcType == null) {
               typeHandlerRegistry.register(javaTypeClass, typeHandlerClass);
             } else {

@@ -25,9 +25,15 @@ import org.apache.ibatis.cache.CacheException;
  * @author Clinton Begin
  */
 public class PerpetualCache implements Cache {
-
+  /**
+   * 缓存 id
+   */
   private final String id;
-
+  /**
+   * 存储缓存的 HashMap
+   *
+   * 二级缓存
+   */
   private Map<Object, Object> cache = new HashMap<>();
 
   public PerpetualCache(String id) {
@@ -39,11 +45,17 @@ public class PerpetualCache implements Cache {
     return id;
   }
 
+  /**
+   * 获取缓存的大小
+   */
   @Override
   public int getSize() {
     return cache.size();
   }
 
+  /**
+   * 把 key 和 value 放入缓存
+   */
   @Override
   public void putObject(Object key, Object value) {
     cache.put(key, value);
@@ -54,6 +66,9 @@ public class PerpetualCache implements Cache {
     return cache.get(key);
   }
 
+  /**
+   *  删除缓存
+   */
   @Override
   public Object removeObject(Object key) {
     return cache.remove(key);

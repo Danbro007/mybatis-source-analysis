@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.danbro.mapper.PersonMapper">
+    <!--声明缓存空间-->
+        <cache/>
+    <!--引用缓存空间-->
+<!--    <cache-ref namespace="com.danbro.mapper.UserMapper"/>-->
+
+    <select id="getPersonById" resultType="Person">
+        select *
+        from person
+        where id = #{id};
+    </select>
+
+    <select id="getPersonById2" resultType="Person">
+        select *
+        from person
+        where id = #{id};
+    </select>
+
+    <select id="getPersonById3" resultType="Person">
+        select *
+        from person
+        where id = (select s1.id from person s1 where s1.id = #{id})
+    </select>
+
+    <update id="updatePersonById" parameterType="Person">
+        update person
+        set name = #{name}
+        where id = #{id}
+    </update>
+
+    <update id="updatePersonNameById">
+        update person
+        set name = #{name}
+        where id = #{id}
+    </update>
+</mapper>

@@ -34,34 +34,76 @@ public interface Executor {
 
   ResultHandler NO_RESULT_HANDLER = null;
 
+  /**
+   * 增删改
+   */
   int update(MappedStatement ms, Object parameter) throws SQLException;
 
+  /**
+   * 查询 返回结果对象列表
+   */
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
 
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException;
 
+  /**
+   *  查询 返回游标对象
+   */
   <E> Cursor<E> queryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds) throws SQLException;
 
+  /**
+   *  批量执行 SQL 语句
+   */
   List<BatchResult> flushStatements() throws SQLException;
 
+  /**
+   * 事务提交
+   */
   void commit(boolean required) throws SQLException;
 
+  /**
+   * 事务回滚
+   */
   void rollback(boolean required) throws SQLException;
 
+  /**
+   * 创建缓存 key
+   */
   CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql);
 
+  /**
+   * 根据缓存 key 查询是否以缓存
+   */
   boolean isCached(MappedStatement ms, CacheKey key);
 
+  /**
+   * 清除本地缓存
+   */
   void clearLocalCache();
 
+  /**
+   * 延迟加载一级缓存中的数据
+   */
   void deferLoad(MappedStatement ms, MetaObject resultObject, String property, CacheKey key, Class<?> targetType);
 
+  /**
+   * 获取事务对象
+   */
   Transaction getTransaction();
 
+  /**
+   * 关闭执行器
+   */
   void close(boolean forceRollback);
 
+  /**
+   * 执行器是否关闭
+   */
   boolean isClosed();
 
+  /**
+   * 包装执行器
+   */
   void setExecutorWrapper(Executor executor);
 
 }

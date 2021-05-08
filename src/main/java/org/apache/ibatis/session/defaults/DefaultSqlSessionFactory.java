@@ -86,11 +86,11 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
   public Configuration getConfiguration() {
     return configuration;
   }
-
+  // 获取SqlSession的核心方法
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
-      // 获取配置文件里设置的默认环境
+      // 获取配置文件里设置的默认环境（default）
       final Environment environment = configuration.getEnvironment();
       // 到 environment 配置里获取事务工厂，如果 environment 为 null 或者 environment 的事务工厂为 null 则创建一个新的 ManagedTransactionFactory。
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);

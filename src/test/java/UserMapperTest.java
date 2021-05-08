@@ -1,9 +1,11 @@
 import com.danbro.MybatisUtils;
 import com.danbro.mapper.UserMapper;
+import com.danbro.pojo.Teacher;
 import com.danbro.pojo.User;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,9 +35,14 @@ public class UserMapperTest {
     public void insertUser(){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         User user = new User();
+        user.setId(2);
         user.setName("Marry");
-        user.setPwd("123");
-        sqlSession.getMapper(UserMapper.class).insertUser(user);
+        user.setPassword("123");
+        user.setAge(22);
+        user.setDeleteFlag(0);
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        int i = userMapper.insertUser(user);
+        System.out.println(i);
         sqlSession.commit();
         sqlSession.close();
     }
@@ -46,7 +53,7 @@ public class UserMapperTest {
         User user = new User();
         user.setId(1);
         user.setName("JACK");
-        user.setPwd("123456");
+        user.setPassword("123456");
         sqlSession.getMapper(UserMapper.class).updateUser(user);
         sqlSession.commit();
         sqlSession.close();
@@ -65,6 +72,31 @@ public class UserMapperTest {
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         List<User> users = sqlSession.getMapper(UserMapper.class).getUsersByLikeName("李");
         users.forEach(System.out::println);
+        sqlSession.close();
+    }
+
+    @Test
+    public void updateUserById(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        User user = new User().setId(1).setName("Helen");
+        userMapper.updateUserById(user);
+        sqlSession.commit();
+        sqlSession.close();
+    }
+
+    /**
+     * 测试 foreach标签的使用
+     */
+    @Test
+    public void getTeacherListInIdList(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        List<Teacher> teacherList = userMapper.getTeacherListInIdList(list);
+        teacherList.forEach(System.out::println);
         sqlSession.close();
     }
 }

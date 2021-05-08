@@ -7,14 +7,28 @@
     <properties resource="database.properties"/>
     <settings>
         <setting name="logImpl" value="LOG4J"/>
-        <!--开启缓存-->
+        <!--让一级缓存的作用域变为当次查询-->
+<!--        <setting name="localCacheScope" value="STATEMENT"/>-->
+        <!--开启二级缓存-->
         <setting name="cacheEnabled" value="true"/>
     </settings>
     <!--类的别名-->
     <typeAliases>
-        <package name="com.danbro.pojo"/>
-        <package name="com.danbro.mapper"/>
+        <!--会自动扫描指定包下面所有的javabean，javabean 的首字母小写的非限定类名来作为它的别名-->
+<!--        <package name="com.danbro.pojo"/>-->
+<!--        <package name="com.danbro.mapper"/>-->
+        <!--给单个类取别名-->
+<!--        <typeAlias type="com.danbro.aliasPojo.Person" alias="person"/>-->
+        <typeAlias type="com.danbro.pojo.User" alias="User"/>
+        <typeAlias type="com.danbro.pojo.Student" alias="Student"/>
+        <typeAlias type="com.danbro.pojo.Teacher" alias="Teacher"/>
+        <typeAlias type="com.danbro.pojo.Person" alias="Person"/>
     </typeAliases>
+
+    <typeHandlers>
+        <!--使用自定义的typeHandler-->
+        <typeHandler handler="com.danbro.typeHandlers.MyTypeHandler"/>
+    </typeHandlers>
 
     <!--多环境配置-->
     <environments default="test">
@@ -43,8 +57,6 @@
         <mapper resource="mapper/UserMapper.xml"/>
         <mapper resource="mapper/StudentMapper.xml"/>
         <mapper resource="mapper/TeacherMapper.xml"/>
-
-<!--        <mapper class="com.danbro.mapper.TeacherMapper"/>-->
+        <mapper resource="mapper/PersonMapper.xml"/>
     </mappers>
-
 </configuration>

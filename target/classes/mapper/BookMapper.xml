@@ -8,10 +8,12 @@
             flushInterval="60000"
             size="512"
             readOnly="true"/>
+    <!--结果集映射-->
     <resultMap id="bookMap" type="com.danbro.pojo.Book">
-        <result column="bookname" property="name"/>
+        <result column="name" property="name"/>
     </resultMap>
     <select id="getBooks" resultMap="bookMap">
-        select  * from books
+        select *
+        from books
     </select>
 </mapper>

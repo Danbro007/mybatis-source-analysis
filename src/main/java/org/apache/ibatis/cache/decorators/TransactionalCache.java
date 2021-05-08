@@ -40,7 +40,9 @@ public class TransactionalCache implements Cache {
   private static final Log log = LogFactory.getLog(TransactionalCache.class);
 
   private final Cache delegate;
+  // 每次提交是否清空暂存区
   private boolean clearOnCommit;
+  // 待提交的数据
   private final Map<Object, Object> entriesToAddOnCommit;
   private final Set<Object> entriesMissedInCache;
 
@@ -64,11 +66,16 @@ public class TransactionalCache implements Cache {
   @Override
   public Object getObject(Object key) {
     // issue #116
+    // 最后由PerpetualCache负责处理到二级缓存获取数据
     Object object = delegate.getObject(key);
     if (object == null) {
+      // 防止缓存穿透
       entriesMissedInCache.add(key);
     }
     // issue #146
+    // 暂存区清空的标记，作用是比如在同一个Session下，先执行update操作但是此时还没有提交，
+    // 此时会把clearOnCommit标记为true，防止后面的select操作直接到二级缓存查询旧数据，产生脏读。
+    // 每次执行update操作后会执行clear(),在clear()方法里会把clearOnCommit设置为true。
     if (clearOnCommit) {
       return null;
     } else {
@@ -93,9 +100,11 @@ public class TransactionalCache implements Cache {
   }
 
   public void commit() {
+    // 执行Cache的清空方法
     if (clearOnCommit) {
       delegate.clear();
     }
+    // 执行提交数据到二级缓存区的操作
     flushPendingEntries();
     reset();
   }
@@ -112,9 +121,12 @@ public class TransactionalCache implements Cache {
   }
 
   private void flushPendingEntries() {
+    // 遍历暂存区的数据
     for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
+      // 通过SynchronizedCache执行同步方法最后由PerpetualCache执行更新到二级缓存的操作
       delegate.putObject(entry.getKey(), entry.getValue());
     }
+    // 防止缓存击穿
     for (Object entry : entriesMissedInCache) {
       if (!entriesToAddOnCommit.containsKey(entry)) {
         delegate.putObject(entry, null);
