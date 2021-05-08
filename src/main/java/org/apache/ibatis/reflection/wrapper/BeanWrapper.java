@@ -31,7 +31,9 @@ import org.apache.ibatis.reflection.property.PropertyTokenizer;
  */
 public class BeanWrapper extends BaseWrapper {
 
+  //被装饰的对象
   private final Object object;
+  // 复制处理反射操作
   private final MetaClass metaClass;
 
   public BeanWrapper(MetaObject metaObject, Object object) {
@@ -42,10 +44,14 @@ public class BeanWrapper extends BaseWrapper {
 
   @Override
   public Object get(PropertyTokenizer prop) {
+    // 容器下标不为空说明是集合类型
     if (prop.getIndex() != null) {
+      // 获取容器对象
       Object collection = resolveCollection(prop, object);
+      // 获取容器下标对应的元素
       return getCollectionValue(prop, collection);
     } else {
+      // 说明是对象，通过反射调用get()获取对象
       return getBeanProperty(prop, object);
     }
   }

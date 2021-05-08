@@ -33,7 +33,7 @@ public abstract class BaseWrapper implements ObjectWrapper {
   protected BaseWrapper(MetaObject metaObject) {
     this.metaObject = metaObject;
   }
-
+  // 解析结合
   protected Object resolveCollection(PropertyTokenizer prop, Object object) {
     if ("".equals(prop.getName())) {
       return object;

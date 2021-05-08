@@ -29,6 +29,9 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
  * @author Clinton Begin
+ *
+ * 强大的反射工具
+ *
  */
 public class MetaObject {
 
@@ -110,15 +113,20 @@ public class MetaObject {
   }
 
   public Object getValue(String name) {
+    // 对字符串进行属性分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 如果还有子属性则把子属性封装成一个MetaObject对象，
     if (prop.hasNext()) {
+      // 获取属性值（会有递归调用）
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         return null;
       } else {
+        // 获取子属性的值
         return metaValue.getValue(prop.getChildren());
       }
     } else {
+      // 获取当前对象属性值
       return objectWrapper.get(prop);
     }
   }

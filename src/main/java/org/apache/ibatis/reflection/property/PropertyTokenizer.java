@@ -19,6 +19,9 @@ import java.util.Iterator;
 
 /**
  * @author Clinton Begin
+ *
+ * 属性分词器
+ *
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
   private String name;
@@ -27,9 +30,12 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
   private final String children;
 
   public PropertyTokenizer(String fullname) {
+    // 比如 commentList[0].commenter.name
     int delim = fullname.indexOf('.');
     if (delim > -1) {
+      // 截取第一个 . 之前的字符串即 commentList[0]
       name = fullname.substring(0, delim);
+      // 截取第一个 . 后面的字符串 commenter.name
       children = fullname.substring(delim + 1);
     } else {
       name = fullname;
@@ -38,7 +44,9 @@ public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
     indexedName = name;
     delim = name.indexOf('[');
     if (delim > -1) {
+      // 获取集合下标索引
       index = name.substring(delim + 1, name.length() - 1);
+      // 获取集合名
       name = name.substring(0, delim);
     }
   }
