@@ -15,6 +15,7 @@ import org.apache.ibatis.annotations.CacheNamespace;
 @CacheNamespace
 public interface BlogMapper {
     Blog selectBlogById(Integer id);
+    Blog selectBlogById2(Integer id);
     Author selectAuthorById(Integer id);
     List<Comment> selectCommentByBlogId(Integer id);
 }

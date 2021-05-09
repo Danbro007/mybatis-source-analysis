@@ -15,17 +15,17 @@ import java.util.List;
  * @Date 2021/5/8 16:02
  */
 public class MetaObjectTest {
-    @Test
-    public void test01(){
-        Commenter commenter = new Commenter().setId(1).setName("Jack");
-        Comment comment = new Comment().setCommenter(commenter).setContent("hello").setId(1);
-        List<Comment> list = new ArrayList();
-        list.add(comment);
-        Blog blog = new Blog().setName("Blog1").setId(1).setCommentList(list);
-
-        Configuration configuration = new Configuration();
-        MetaObject metaObject = configuration.newMetaObject(blog);
-        Object value = metaObject.getValue("commentList[0].commenter.name");
-        System.out.println(value);
-    }
+//    @Test
+//    public void test01(){
+//        Commenter commenter = new Commenter().setId(1).setName("Jack");
+//        Comment comment = new Comment().setCommenter(commenter).setContent("hello").setId(1);
+//        List<Comment> list = new ArrayList();
+//        list.add(comment);
+//        Blog blog = new Blog().setName("Blog1").setId(1).setCommentList(list);
+//
+//        Configuration configuration = new Configuration();
+//        MetaObject metaObject = configuration.newMetaObject(blog);
+//        Object value = metaObject.getValue("commentList[0].commenter.name");
+//        System.out.println(value);
+//    }
 }

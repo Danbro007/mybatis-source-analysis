@@ -1,7 +1,9 @@
+import java.util.HashSet;
 import java.util.List;
 import com.danbro.MybatisUtils;
 import com.danbro.mapper.OrderMapper;
 import com.danbro.pojo.Order;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
@@ -18,6 +20,8 @@ public class LazyTest {
     @Test
     public void test01(){
         SqlSession sqlSession = MybatisUtils.getSqlSession();
+        Configuration configuration = sqlSession.getConfiguration();
+        configuration.setLazyLoadTriggerMethods(new HashSet<>());
         OrderMapper orderMapper = sqlSession.getMapper(OrderMapper.class);
         // 在这里只会执行查询order的SQL
         List<Order> orders = orderMapper.selectOrderList();

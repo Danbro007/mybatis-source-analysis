@@ -22,4 +22,15 @@ public class NestedQueryTest {
         Blog blog = blogMapper.selectBlogById(1);
         System.out.println(blog);
     }
+    /**
+     * 嵌套映射的流程
+     */
+    @Test
+    public void test02(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        BlogMapper blogMapper = sqlSession.getMapper(BlogMapper.class);
+        Blog blog = blogMapper.selectBlogById2(1);
+        System.out.println(blog);
+    }
+
 }

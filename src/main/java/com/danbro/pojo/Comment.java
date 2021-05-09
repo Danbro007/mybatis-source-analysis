@@ -17,15 +17,4 @@ public class Comment {
     private String content;
     private Blog blog;
     private Commenter commenter;
-
-
-    @Override
-    public String toString() {
-        return "Comment{" +
-                "id=" + id +
-                ", content='" + content + '\'' +
-                ", blog=" + blog.getName() +
-                ", commenter=" + commenter +
-                '}';
-    }
 }
