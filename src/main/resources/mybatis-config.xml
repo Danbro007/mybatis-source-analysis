@@ -11,6 +11,7 @@
 <!--        <setting name="localCacheScope" value="STATEMENT"/>-->
         <!--开启二级缓存-->
         <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="true"/>
     </settings>
     <!--类的别名-->
     <typeAliases>
@@ -24,6 +25,11 @@
         <typeAlias type="com.danbro.pojo.Teacher" alias="Teacher"/>
         <typeAlias type="com.danbro.pojo.Person" alias="Person"/>
         <typeAlias type="com.danbro.pojo.People" alias="People"/>
+        <typeAlias type="com.danbro.pojo.Blog" alias="Blog"/>
+        <typeAlias type="com.danbro.pojo.Comment" alias="Comment"/>
+        <typeAlias type="com.danbro.pojo.Commenter" alias="Commenter"/>
+        <typeAlias type="com.danbro.pojo.Author" alias="Author"/>
+        <typeAlias type="com.danbro.pojo.Order" alias="Order"/>
     </typeAliases>
 
     <typeHandlers>
@@ -58,7 +64,8 @@
 <!--        <mapper resource="mapper/UserMapper.xml"/>-->
 <!--        <mapper resource="mapper/StudentMapper.xml"/>-->
 <!--        <mapper resource="mapper/TeacherMapper.xml"/>-->
-<!--        <mapper resource="mapper/PersonMapper.xml"/>-->
-        <package name="com.danbro.mapper"/>
+        <mapper resource="mapper/BlogMapper.xml"/>
+        <mapper resource="mapper/OrderMapper.xml"/>
+<!--        <package name="com.danbro.mapper"/>-->
     </mappers>
 </configuration>

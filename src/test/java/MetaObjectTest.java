@@ -6,6 +6,7 @@ import org.apache.ibatis.session.Configuration;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Danrbo
@@ -18,7 +19,7 @@ public class MetaObjectTest {
     public void test01(){
         Commenter commenter = new Commenter().setId(1).setName("Jack");
         Comment comment = new Comment().setCommenter(commenter).setContent("hello").setId(1);
-        ArrayList<Comment> list = new ArrayList<>();
+        List<Comment> list = new ArrayList();
         list.add(comment);
         Blog blog = new Blog().setName("Blog1").setId(1).setCommentList(list);
 

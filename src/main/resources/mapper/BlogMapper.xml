@@ -3,5 +3,37 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.danbro.mapper.BlogMapper">
+    <!--延迟加载测试-->
+    <resultMap id="blogMap" type="Blog" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <!--一对一-->
+        <!--        <association property="author" column="author_id" select="selectAuthorById"/>-->
+        <!--一对多-->
+        <collection property="commentList" column="id" select="selectCommentByBlogId" fetchType="eager"/>
+    </resultMap>
+
+    <resultMap id="commentMap" type="Comment" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <association property="blog" column="blog_id" select="selectBlogById" fetchType="eager"/>
+    </resultMap>
+    <select id="selectBlogById" resultMap="blogMap">
+        select *
+        from blog
+        where id = #{id}
+    </select>
+    <select id="selectCommentByBlogId" resultMap="commentMap">
+        select *
+        from comment
+        where blog_id = #{blodId}
+    </select>
+
+    <select id="selectAuthorById" resultType="Author">
+        select *
+        from author
+        where id = #{authorId}
+    </select>
+
 
 </mapper>

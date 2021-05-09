@@ -174,7 +174,7 @@ public abstract class BaseExecutor implements Executor {
       // 当前查询完成，查询层数减1
       queryStack--;
     }
-    // 延迟加载的相关部分
+    // 延迟加载的相关部分，执行到父查询了则把属性注入
     if (queryStack == 0) {
       for (DeferredLoad deferredLoad : deferredLoads) {
         deferredLoad.load();
@@ -201,10 +201,14 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 创建延迟加载对象
     DeferredLoad deferredLoad = new DeferredLoad(resultObject, property, key, localCache, configuration, targetType);
+    // 判断能否延迟加载
     if (deferredLoad.canLoad()) {
+      // 缓存有数据立即加载
       deferredLoad.load();
     } else {
+      // 缓存没有数据则把数据放到延迟加载列表里
       deferredLoads.add(new DeferredLoad(resultObject, property, key, localCache, configuration, targetType));
     }
   }
@@ -359,7 +363,7 @@ public abstract class BaseExecutor implements Executor {
       // 具体的查询方法是由 BaseExecutor 的子类来实现的，BaseExecutor 只提供模板方法。
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
-      // 清除 key 对应的缓存
+      // 清除 key 对应临时占位符的缓存
       localCache.removeObject(key);
     }
     // 查询结果放入缓存里
@@ -403,18 +407,25 @@ public abstract class BaseExecutor implements Executor {
                         Configuration configuration,
                         Class<?> targetType) {
       this.resultObject = resultObject;
+      // 属性名
       this.property = property;
+      // 缓存key
       this.key = key;
+      // 一级缓存
       this.localCache = localCache;
       this.objectFactory = configuration.getObjectFactory();
       this.resultExtractor = new ResultExtractor(configuration, objectFactory);
+      // 属性类型
       this.targetType = targetType;
     }
 
+    /**
+     * 能延迟加载的要素：一级缓存有数据并且这个一级缓存里的数据不是占位符，是真正的数据。
+     */
     public boolean canLoad() {
       return localCache.getObject(key) != null && localCache.getObject(key) != EXECUTION_PLACEHOLDER;
     }
-
+    // 把一级缓存的数据获取，然后把属性值注入
     public void load() {
       @SuppressWarnings("unchecked")
       // we suppose we get back a List

@@ -1,6 +1,7 @@
 package com.danbro.pojo;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 /**
@@ -14,5 +15,17 @@ import lombok.experimental.Accessors;
 public class Comment {
     private Integer id;
     private String content;
+    private Blog blog;
     private Commenter commenter;
+
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", blog=" + blog.getName() +
+                ", commenter=" + commenter +
+                '}';
+    }
 }

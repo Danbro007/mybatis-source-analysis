@@ -125,7 +125,7 @@ public class CachingExecutor implements Executor {
         return list;
       }
     }
-    // 缓存没有开启则让真正干活的SimpleExecutor执行器来执行查询
+    // 缓存没有开启则让真正干活的BaseExecutor执行器来执行查询
     return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 

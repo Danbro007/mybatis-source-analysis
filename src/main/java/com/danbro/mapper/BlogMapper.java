@@ -1,5 +1,9 @@
 package com.danbro.mapper;
 
+import java.util.List;
+import com.danbro.pojo.Author;
+import com.danbro.pojo.Blog;
+import com.danbro.pojo.Comment;
 import org.apache.ibatis.annotations.CacheNamespace;
 
 /**
@@ -10,4 +14,7 @@ import org.apache.ibatis.annotations.CacheNamespace;
  */
 @CacheNamespace
 public interface BlogMapper {
+    Blog selectBlogById(Integer id);
+    Author selectAuthorById(Integer id);
+    List<Comment> selectCommentByBlogId(Integer id);
 }

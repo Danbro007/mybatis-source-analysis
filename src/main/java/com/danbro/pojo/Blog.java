@@ -1,6 +1,7 @@
 package com.danbro.pojo;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.util.List;
@@ -16,5 +17,7 @@ import java.util.List;
 public class Blog {
     private Integer id;
     private String name;
+    private Author author;
     private List<Comment> commentList;
+
 }

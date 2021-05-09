@@ -446,16 +446,21 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   //
-  // PROPERTY MAPPINGS
+  // PROPERTY MAPPINGS 手动注入属性
   //
 
   private boolean applyPropertyMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject, ResultLoaderMap lazyLoader, String columnPrefix)
       throws SQLException {
+    // 要映射的列名
     final List<String> mappedColumnNames = rsw.getMappedColumnNames(resultMap, columnPrefix);
     boolean foundValues = false;
+    // 属性映射
     final List<ResultMapping> propertyMappings = resultMap.getPropertyResultMappings();
+    // 遍历要映射的属性
     for (ResultMapping propertyMapping : propertyMappings) {
+      // 列名
       String column = prependPrefix(propertyMapping.getColumn(), columnPrefix);
+      // 判断当前映射属性是不是要嵌套查询
       if (propertyMapping.getNestedResultMapId() != null) {
         // the user added a column attribute to a nested result map, ignore it
         column = null;
@@ -463,6 +468,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
       if (propertyMapping.isCompositeResult()
           || (column != null && mappedColumnNames.contains(column.toUpperCase(Locale.ENGLISH)))
           || propertyMapping.getResultSet() != null) {
+        // 获取映射的属性值
         Object value = getPropertyMappingValue(rsw.getResultSet(), metaObject, propertyMapping, lazyLoader, columnPrefix);
         // issue #541 make property optional
         final String property = propertyMapping.getProperty();
@@ -486,6 +492,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object getPropertyMappingValue(ResultSet rs, MetaObject metaResultObject, ResultMapping propertyMapping, ResultLoaderMap lazyLoader, String columnPrefix)
       throws SQLException {
+    // 判断是不是嵌套查询的依据是有没有嵌套查询的ID
     if (propertyMapping.getNestedQueryId() != null) {
       return getNestedQueryMappingValue(rs, metaResultObject, propertyMapping, lazyLoader, columnPrefix);
     } else if (propertyMapping.getResultSet() != null) {
@@ -749,7 +756,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   //
-  // NESTED QUERY
+  // NESTED QUERY 嵌套查询
   //
 
   private Object getNestedQueryConstructorValue(ResultSet rs, ResultMapping constructorMapping, String columnPrefix) throws SQLException {
@@ -770,25 +777,37 @@ public class DefaultResultSetHandler implements ResultSetHandler {
 
   private Object getNestedQueryMappingValue(ResultSet rs, MetaObject metaResultObject, ResultMapping propertyMapping, ResultLoaderMap lazyLoader, String columnPrefix)
       throws SQLException {
+    // 嵌套查询的ID是 select 的属性值，比如select="selectCommentByBlogId" 那他的的嵌套查询ID为selectCommentByBlogId
     final String nestedQueryId = propertyMapping.getNestedQueryId();
     final String property = propertyMapping.getProperty();
+    // 嵌套查询的MappedStatement
     final MappedStatement nestedQuery = configuration.getMappedStatement(nestedQueryId);
+    // 嵌套查询的参数类型
     final Class<?> nestedQueryParameterType = nestedQuery.getParameterMap().getType();
+    // 嵌套查询的参数值
     final Object nestedQueryParameterObject = prepareParameterForNestedQuery(rs, propertyMapping, nestedQueryParameterType, columnPrefix);
     Object value = null;
     if (nestedQueryParameterObject != null) {
+      // 嵌套查询的动态SQL
       final BoundSql nestedBoundSql = nestedQuery.getBoundSql(nestedQueryParameterObject);
+      // 创建一级缓存的Key
       final CacheKey key = executor.createCacheKey(nestedQuery, nestedQueryParameterObject, RowBounds.DEFAULT, nestedBoundSql);
+      // 返回数据的类型
       final Class<?> targetType = propertyMapping.getJavaType();
+      // 在一级缓存有数据则尝试延迟加载
       if (executor.isCached(nestedQuery, key)) {
+        // 延迟加载
         executor.deferLoad(nestedQuery, metaResultObject, property, key, targetType);
         value = DEFERRED;
       } else {
         final ResultLoader resultLoader = new ResultLoader(configuration, executor, nestedQuery, nestedQueryParameterObject, targetType, key, nestedBoundSql);
+        // 是懒加载
         if (propertyMapping.isLazy()) {
+          // 执行懒加载的操作
           lazyLoader.addLoader(property, metaResultObject, resultLoader);
           value = DEFERRED;
         } else {
+          // 不是懒加载则执行实时加载
           value = resultLoader.loadResult();
         }
       }
