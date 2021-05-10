@@ -898,7 +898,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   //
-  // HANDLE NESTED RESULT MAPS 处理嵌套的结果映射
+  // HANDLE NESTED RESULT MAPS 处理嵌套的结果集映射
   //
 
   private void handleRowValuesForNestedResultMap(ResultSetWrapper rsw, ResultMap resultMap, ResultHandler<?> resultHandler, RowBounds rowBounds, ResultMapping parentMapping) throws SQLException {
@@ -906,10 +906,10 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     ResultSet resultSet = rsw.getResultSet();
     skipRows(resultSet, rowBounds);
     Object rowValue = previousRowValue;
-    // 遍历查询到的每条记录
+    // 遍历查询到的每条行记录
     while (shouldProcessMoreRows(resultContext, rowBounds) && !resultSet.isClosed() && resultSet.next()) {
       final ResultMap discriminatedResultMap = resolveDiscriminatedResultMap(resultSet, resultMap, null);
-      // 创建RowKey,默认是ID，如果没有ID则是列
+      // 创建RowKey,默认是ID，如果没有ID则是列名
       final CacheKey rowKey = createRowKey(discriminatedResultMap, rsw, null);
       // 尝试到暂存区取值
       Object partialObject = nestedResultObjects.get(rowKey);
@@ -944,6 +944,8 @@ public class DefaultResultSetHandler implements ResultSetHandler {
     Object rowValue = partialObject;
     if (rowValue != null) {
       final MetaObject metaObject = configuration.newMetaObject(rowValue);
+      // 解决循环引用,比如A引用B，B引用A，在先解析A的时候把A放入缓存，然后发现需要B，
+      // 则解析B，解析时又发现需要A则直接到缓存中取行了，最后B解析完继续A的步骤，然后把缓存中的A删除。
       putAncestor(rowValue, resultMapId);
       applyNestedResultMappings(rsw, resultMap, metaObject, columnPrefix, combinedKey, false);
       ancestorObjects.remove(resultMapId);
@@ -961,7 +963,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
         }
         // 手动映射注入那些普通的属性，比如int string等
         foundValues = applyPropertyMappings(rsw, resultMap, metaObject, lazyLoader, columnPrefix) || foundValues;
-        // 放到 ancestorObjects 这个Map里
+        // 放到 ancestorObjects 这个Map里，这里是为了解决循环引用。
         putAncestor(rowValue, resultMapId);
         // 执行嵌套属性映射注入
         foundValues = applyNestedResultMappings(rsw, resultMap, metaObject, columnPrefix, combinedKey, true) || foundValues;
@@ -982,7 +984,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
   }
 
   //
-  // NESTED RESULT MAP (JOIN MAPPING) 处理嵌套的结果映射
+  // NESTED RESULT MAP (JOIN MAPPING) 处理嵌套的结果集映射
   //
 
   private boolean applyNestedResultMappings(ResultSetWrapper rsw, ResultMap resultMap, MetaObject metaObject, String parentPrefix, CacheKey parentRowKey, boolean newObject) {
@@ -999,7 +1001,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
           if (resultMapping.getColumnPrefix() == null) {
             // try to fill circular reference only when columnPrefix
             // is not specified for the nested result map (issue #215)
-            // 尝试填充循环引用问题，如果没有指定 columnPrefix 给嵌套映射
+            // 这里解决了循环引用的问题，到缓存中获取对象
             Object ancestorObject = ancestorObjects.get(nestedResultMapId);
             if (ancestorObject != null) {
               if (newObject) {
@@ -1021,6 +1023,7 @@ public class DefaultResultSetHandler implements ResultSetHandler {
           if (anyNotNullColumnHasValue(resultMapping, columnPrefix, rsw)) {
             // 获取到嵌套映射属性值
             rowValue = getRowValue(rsw, nestedResultMap, combinedKey, columnPrefix, rowValue);
+            // 之前暂存区没有这个属性值，如果属性是容器则把获取的属性则使用add方法添加到容器内，如果不是容器类型则使用set方法设置
             if (rowValue != null && !knownValue) {
               linkObjects(metaObject, resultMapping, rowValue);
               foundValues = true;

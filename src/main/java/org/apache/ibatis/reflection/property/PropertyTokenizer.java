@@ -24,9 +24,13 @@ import java.util.Iterator;
  *
  */
 public class PropertyTokenizer implements Iterator<PropertyTokenizer> {
+  // 集合名
   private String name;
+  // 集合名[索引]
   private final String indexedName;
+  // 获取集合下标索引
   private String index;
+  // 子属性字符串
   private final String children;
 
   public PropertyTokenizer(String fullname) {

@@ -38,8 +38,14 @@
     <resultMap id="blogMap2" type="Blog" autoMapping="true">
         <id column="id" property="id"/>
         <result column="name" property="name"/>
-        <collection property="commentList" ofType="Comment" columnPrefix="comment_" autoMapping="true"/>
+        <!--嵌套映射测试用-->
+<!--        <collection property="commentList" ofType="Comment" columnPrefix="comment_" autoMapping="true">-->
+        <!--嵌套映射的循环引用测试用-->
+        <collection property="commentList" ofType="Comment" columnPrefix="comment_" autoMapping="true">
+            <association property="blog" column="blog_id" resultMap="blogMap2"/>
+        </collection>
     </resultMap>
+
     <select id="selectBlogById2" resultMap="blogMap2">
         select blog.id, blog.name, c.content as comment_content, c.id as comment_id
         from blog

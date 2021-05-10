@@ -115,7 +115,7 @@ public class MetaObject {
   public Object getValue(String name) {
     // 对字符串进行属性分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
-    // 如果还有子属性则把子属性封装成一个MetaObject对象，
+    // 如果还有子属性则把子属性封装成一个新的MetaObject对象，
     if (prop.hasNext()) {
       // 获取属性值（会有递归调用）
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
