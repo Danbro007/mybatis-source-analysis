@@ -1,10 +1,14 @@
 import com.danbro.MybatisUtils;
+import com.danbro.mapper.BlogMapper;
 import com.danbro.pojo.*;
 import org.apache.ibatis.scripting.xmltags.*;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -123,7 +127,9 @@ public class OGNLTest {
         System.out.println(context.getSql());
     }
 
-
+    /**
+     * 测试 <if> 和 <where> 标签的解析流程
+     */
     @Test
     public void test08(){
         Configuration configuration = MybatisUtils.getSqlSession().getConfiguration();
@@ -143,5 +149,28 @@ public class OGNLTest {
         WhereSqlNode whereSqlNode = new WhereSqlNode(configuration, mixedSqlNode);
         whereSqlNode.apply(context);
         System.out.println(context.getSql());
+    }
+
+    /**
+     * 测试<foreach>标签的执行过程分析
+     */
+    @Test
+    public void test09(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        BlogMapper blogMapper = sqlSession.getMapper(BlogMapper.class);
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 5);
+        List<Blog> blogList = blogMapper.selectBlogInIdList(list);
+        blogList.forEach(System.out::println);
+    }
+
+    /**
+     * 分析把xml文件里动态SQL解析为MixedSqlNode
+     */
+    @Test
+    public void test10(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession();
+        BlogMapper blogMapper = sqlSession.getMapper(BlogMapper.class);
+        Blog blog = blogMapper.selectBlogById3(new Blog().setId(1).setName("java进阶"));
+        System.out.println(blog);
     }
 }

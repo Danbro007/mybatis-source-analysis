@@ -51,54 +51,74 @@ public class ForEachSqlNode implements SqlNode {
   @Override
   public boolean apply(DynamicContext context) {
     Map<String, Object> bindings = context.getBindings();
+    // 获取 <foreach> 标签里容器的迭代器
     final Iterable<?> iterable = evaluator.evaluateIterable(collectionExpression, bindings);
+    // 元素为0则直接返回
     if (!iterable.iterator().hasNext()) {
       return true;
     }
     boolean first = true;
+    // 拼接<foreach>标签里 open 的属性值
     applyOpen(context);
     int i = 0;
+    // 遍历容器内里的元素
     for (Object o : iterable) {
       DynamicContext oldContext = context;
+      // 是第一个元素或者分隔符为空（说明是只有一个元素）
       if (first || separator == null) {
         context = new PrefixedContext(context, "");
       } else {
+        // 加上分隔符
         context = new PrefixedContext(context, separator);
       }
+      // 当前元素的索引
       int uniqueNumber = context.getUniqueNumber();
       // Issue #709
+      // 容器类型是Map
       if (o instanceof Map.Entry) {
         @SuppressWarnings("unchecked")
         Map.Entry<Object, Object> mapEntry = (Map.Entry<Object, Object>) o;
         applyIndex(context, mapEntry.getKey(), uniqueNumber);
         applyItem(context, mapEntry.getValue(), uniqueNumber);
       } else {
+        // 其余类型
+        // 绑定索引
         applyIndex(context, i, uniqueNumber);
+        // 绑定参数
         applyItem(context, o, uniqueNumber);
       }
       contents.apply(new FilteredDynamicContext(configuration, context, index, item, uniqueNumber));
+      // 第一个元素
       if (first) {
+        // 前缀字符串设置成功，说明第一个元素设置完毕了，把first设为false
         first = !((PrefixedContext) context).isPrefixApplied();
       }
       context = oldContext;
       i++;
     }
+    // 追加结尾的符号
     applyClose(context);
+    // 删除 bindings 里 item 的属性值
     context.getBindings().remove(item);
+    // 删除 bindings 里 index 的属性值
     context.getBindings().remove(index);
     return true;
   }
 
   private void applyIndex(DynamicContext context, Object o, int i) {
     if (index != null) {
+      // index 是<foreach>的index属性值，o为当前元素的下标
       context.bind(index, o);
+      // 拼接字符串，"__frch_" + 下标 + "_" + o
       context.bind(itemizeItem(index, i), o);
     }
   }
 
   private void applyItem(DynamicContext context, Object o, int i) {
     if (item != null) {
+      // 绑定元素 item 是 <foreach> 标签 item 的属性值，o为绑定的元素
       context.bind(item, o);
+      // 拼接字符串，"__frch_" + 下标 + "_" + 绑定的元素
       context.bind(itemizeItem(item, i), o);
     }
   }
@@ -147,9 +167,10 @@ public class ForEachSqlNode implements SqlNode {
     public String getSql() {
       return delegate.getSql();
     }
-
+    // 解析 <foreach> 标签内的静态文本SQL
     @Override
     public void appendSql(String sql) {
+      // 负责解析开头为 "#{" ，"}" 结尾的字符串
       GenericTokenParser parser = new GenericTokenParser("#{", "}", content -> {
         String newContent = content.replaceFirst("^\\s*" + item + "(?![^.,:\\s])", itemizeItem(item, index));
         if (itemIndex != null && newContent.equals(content)) {
@@ -157,7 +178,8 @@ public class ForEachSqlNode implements SqlNode {
         }
         return "#{" + newContent + "}";
       });
-
+      // 比如<foreach> 元素内的文本是 #{item} ,则在这里把每个元素解析为 #{__frch_item_1}。
+      // 这里 __frch 是固定的，item是<foreach>item的属性值，1是元素在数组的下标
       delegate.appendSql(parser.parse(sql));
     }
 

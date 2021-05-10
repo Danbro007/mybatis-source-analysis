@@ -50,7 +50,7 @@ public class XMLScriptBuilder extends BaseBuilder {
     initNodeHandlerMap();
   }
 
-
+  // 注册动态SQL标签的处理器
   private void initNodeHandlerMap() {
     nodeHandlerMap.put("trim", new TrimHandler());
     nodeHandlerMap.put("where", new WhereHandler());
@@ -73,22 +73,32 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
     return sqlSource;
   }
-
+  // 解析动态SQL为MixedSqlNode
   protected MixedSqlNode parseDynamicTags(XNode node) {
     List<SqlNode> contents = new ArrayList<>();
+    // 获取当前节点的子节点
     NodeList children = node.getNode().getChildNodes();
+    // 遍历子节点
     for (int i = 0; i < children.getLength(); i++) {
       XNode child = node.newXNode(children.item(i));
+      // 判断当前节点是不是文本类型
       if (child.getNode().getNodeType() == Node.CDATA_SECTION_NODE || child.getNode().getNodeType() == Node.TEXT_NODE) {
+        // 获取当前节点的文本数据
         String data = child.getStringBody("");
+        // 是的话把数据封装成TextSqlNode（文本类型SQL节点）
         TextSqlNode textSqlNode = new TextSqlNode(data);
+        // 如果当前的TextSqlNode是动态的(表达式文本)，比如带有"${"可以说是动态的
         if (textSqlNode.isDynamic()) {
           contents.add(textSqlNode);
           isDynamic = true;
         } else {
+          // 不是动态的则封装成一个StaticTextSqlNode
           contents.add(new StaticTextSqlNode(data));
         }
-      } else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+      }
+      // 判断是不是元素节点，比如 <where>
+      else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+        // 通过标签名找到对应的处理器，比如<where> ---> WhereHandler
         String nodeName = child.getNode().getNodeName();
         NodeHandler handler = nodeHandlerMap.get(nodeName);
         if (handler == null) {
@@ -143,8 +153,10 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      // 解析子节点并返回为MixedSqlNode
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       WhereSqlNode where = new WhereSqlNode(configuration, mixedSqlNode);
+      // 封装好的WhereSqlNode放入父节点的子节点列表里
       targetContents.add(where);
     }
   }

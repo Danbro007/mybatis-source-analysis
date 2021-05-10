@@ -86,7 +86,7 @@ public class SimpleExecutor extends BaseExecutor {
   public List<BatchResult> doFlushStatements(boolean isRollback) {
     return Collections.emptyList();
   }
-  // 准备Statement
+  // 预处理Statement
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
     // 获取连接

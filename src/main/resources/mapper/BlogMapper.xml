@@ -52,9 +52,8 @@
                  left join comment c on blog.id = c.blog_id
         where blog_id = #{id}
     </select>
-
-    <select id="selectUser">
-        select * from user
+    <select id="selectBlogById3" resultMap="blogMap2" parameterType="Blog">
+        select * from blog
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -62,10 +61,14 @@
             <if test="name != null">
                 and name = #{name}
             </if>
-            <if test="age != null">
-                and age = #{age}
-            </if>
         </where>
+    </select>
+
+    <select id="selectBlogInIdList" resultType="Blog" flushCache="true">
+        select * from blog where id in
+        <foreach item="item" collection="list" open="(" separator="," close=")" index="index">
+            #{item}
+        </foreach>
     </select>
 
 

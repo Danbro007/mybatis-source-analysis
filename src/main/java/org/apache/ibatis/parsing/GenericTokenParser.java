@@ -36,15 +36,17 @@ public class GenericTokenParser {
       return "";
     }
     // search open token
-    // 再判断是否有 ${ 这个字符串
+    // 再判断指定的开头符号在text中的起始下标
     int start = text.indexOf(openToken);
     if (start == -1) {
       return text;
     }
+    // 把text转换成字符数组
     char[] src = text.toCharArray();
     int offset = 0;
     final StringBuilder builder = new StringBuilder();
     StringBuilder expression = null;
+    // 遍历字符数组的每个字符
     while (start > -1) {
       if (start > 0 && src[start - 1] == '\\') {
         // this open token is escaped. remove the backslash and continue.
@@ -52,14 +54,18 @@ public class GenericTokenParser {
         offset = start + openToken.length();
       } else {
         // found open token. let's search close token.
+        // 第一个元素则创建一个StringBuilder，之后把字符追加到这里
         if (expression == null) {
           expression = new StringBuilder();
         } else {
           expression.setLength(0);
         }
         builder.append(src, offset, start - offset);
+        // 加上指定开头字符串后在text中的下标
         offset = start + openToken.length();
+        // 获取结尾字符串在text中的终止下标
         int end = text.indexOf(closeToken, offset);
+        // 结尾字符串存在
         while (end > -1) {
           if (end > offset && src[end - 1] == '\\') {
             // this close token is escaped. remove the backslash and continue.
@@ -76,7 +82,7 @@ public class GenericTokenParser {
           builder.append(src, start, src.length - start);
           offset = src.length;
         } else {
-          // 找到映射的变量对应的属性值 ${driver} --->com.mysql.jdbc.Driver
+          // 找到映射的变量对应的属性值比如：${driver} --->com.mysql.jdbc.Driver
           builder.append(handler.handleToken(expression.toString()));
           offset = end + closeToken.length();
         }
