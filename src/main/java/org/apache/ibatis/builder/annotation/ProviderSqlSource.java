@@ -32,6 +32,9 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Clinton Begin
  * @author Kazuki Shimizu
+ *
+ * 第三方的脚本语言集成，例如 FreeMark
+ *
  */
 public class ProviderSqlSource implements SqlSource {
 

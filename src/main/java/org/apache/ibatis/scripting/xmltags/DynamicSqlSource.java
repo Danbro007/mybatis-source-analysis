@@ -22,6 +22,9 @@ import org.apache.ibatis.session.Configuration;
 
 /**
  * @author Clinton Begin
+ *
+ * 动态SQL数据源，每次执行都需要编译，性能相对较差。
+ *
  */
 public class DynamicSqlSource implements SqlSource {
 
@@ -39,8 +42,10 @@ public class DynamicSqlSource implements SqlSource {
     rootSqlNode.apply(context);
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> parameterType = parameterObject == null ? Object.class : parameterObject.getClass();
+    // 每次执行都要解析编译生成SqlSource，从编译好的SqlSource获取到SQL语句。
     SqlSource sqlSource = sqlSourceParser.parse(context.getSql(), parameterType, context.getBindings());
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
+    // 绑定参数
     context.getBindings().forEach(boundSql::setAdditionalParameter);
     return boundSql;
   }

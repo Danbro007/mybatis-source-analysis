@@ -28,12 +28,12 @@ import org.apache.ibatis.session.Configuration;
 /**
  * Static SqlSource. It is faster than {@link DynamicSqlSource} because mappings are
  * calculated during startup.
- *
+ * 静态SQL数据源，一次编译，多次执行，性能相对DynamicSqlSource高点。例如：select * from Order where id = #{id}
  * @since 3.2.0
  * @author Eduardo Macarron
  */
 public class RawSqlSource implements SqlSource {
-
+  // 默认持有的是 StaticSqlSource
   private final SqlSource sqlSource;
 
   public RawSqlSource(Configuration configuration, SqlNode rootSqlNode, Class<?> parameterType) {
@@ -54,6 +54,7 @@ public class RawSqlSource implements SqlSource {
 
   @Override
   public BoundSql getBoundSql(Object parameterObject) {
+    // 每次从StaticSqlSource获取SQL语句
     return sqlSource.getBoundSql(parameterObject);
   }
 

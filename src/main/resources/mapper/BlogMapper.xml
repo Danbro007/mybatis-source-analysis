@@ -39,7 +39,7 @@
         <id column="id" property="id"/>
         <result column="name" property="name"/>
         <!--嵌套映射测试用-->
-<!--        <collection property="commentList" ofType="Comment" columnPrefix="comment_" autoMapping="true">-->
+        <!--        <collection property="commentList" ofType="Comment" columnPrefix="comment_" autoMapping="true">-->
         <!--嵌套映射的循环引用测试用-->
         <collection property="commentList" ofType="Comment" columnPrefix="comment_" autoMapping="true">
             <association property="blog" column="blog_id" resultMap="blogMap2"/>
@@ -51,6 +51,21 @@
         from blog
                  left join comment c on blog.id = c.blog_id
         where blog_id = #{id}
+    </select>
+
+    <select id="selectUser">
+        select * from user
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null">
+                and name = #{name}
+            </if>
+            <if test="age != null">
+                and age = #{age}
+            </if>
+        </where>
     </select>
 
 

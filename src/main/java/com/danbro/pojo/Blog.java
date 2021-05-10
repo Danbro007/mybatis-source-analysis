@@ -17,7 +17,7 @@ import java.util.List;
 public class Blog {
     private Integer id;
     private String name;
-//    private Author author;
+    private Author author;
     private List<Comment> commentList;
 
     @Override

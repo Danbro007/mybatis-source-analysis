@@ -51,7 +51,9 @@ public class TrimSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    // 把DynamicContext装饰成FilteredDynamicContext，执行IfSqlNode条件判断的时候，把符合条件的SQL以追加的方式放入一个sqlBuffer里
     FilteredDynamicContext filteredDynamicContext = new FilteredDynamicContext(context);
+    // 遍历每个子节点执行表达式判断是不是符合条件，如果符合条件则把子节点内的StaticTextSqlNode的文本追加到sqlBuffer里
     boolean result = contents.apply(filteredDynamicContext);
     filteredDynamicContext.applyAll();
     return result;
@@ -85,11 +87,15 @@ public class TrimSqlNode implements SqlNode {
 
     public void applyAll() {
       sqlBuffer = new StringBuilder(sqlBuffer.toString().trim());
+      // SQL语句变成大写
       String trimmedUppercaseSql = sqlBuffer.toString().toUpperCase(Locale.ENGLISH);
       if (trimmedUppercaseSql.length() > 0) {
+        // 添加前缀
         applyPrefix(sqlBuffer, trimmedUppercaseSql);
+        // 添加后缀
         applySuffix(sqlBuffer, trimmedUppercaseSql);
       }
+      // 把待追加的语句添加到静态文本SQL语句的后面
       delegate.appendSql(sqlBuffer.toString());
     }
 
@@ -122,6 +128,8 @@ public class TrimSqlNode implements SqlNode {
       if (!prefixApplied) {
         prefixApplied = true;
         if (prefixesToOverride != null) {
+          // 遍历每个需要删除字符串如果SQL语句的开头是这个则把指定的字符串删除。
+          // 比如：删除前 and id = #{id}则删除后是 id = #{id}
           for (String toRemove : prefixesToOverride) {
             if (trimmedUppercaseSql.startsWith(toRemove)) {
               sql.delete(0, toRemove.trim().length());
@@ -129,8 +137,11 @@ public class TrimSqlNode implements SqlNode {
             }
           }
         }
+        // 要添加的前缀，Where 和 Set
         if (prefix != null) {
+          // 添加空格
           sql.insert(0, " ");
+          // 添加前缀，比如添加后就是 Where id = #{id}
           sql.insert(0, prefix);
         }
       }

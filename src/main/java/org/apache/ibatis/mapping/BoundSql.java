@@ -34,11 +34,25 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  */
 public class BoundSql {
-
+  /**
+   * SQL语句，不是动态SQL，是能执行的SQL语句。
+   */
   private final String sql;
+  /**
+   * 参数映射
+   */
   private final List<ParameterMapping> parameterMappings;
+  /**
+   * 原始的参数对象
+   */
   private final Object parameterObject;
+  /**
+   * 额外的参数
+   */
   private final Map<String, Object> additionalParameters;
+  /**
+   * 反射工具，用来操作parameterObject
+   */
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {
