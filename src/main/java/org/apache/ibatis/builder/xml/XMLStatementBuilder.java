@@ -63,8 +63,11 @@ public class XMLStatementBuilder extends BaseBuilder {
 
     String nodeName = context.getNode().getNodeName();
     SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));
+    // 是否是select类型的SQL
     boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
+    // 获取 flushCache 的属性值，如果是select语句则不清空缓存，如果不是则select语句则每次执行后都会清空缓存
     boolean flushCache = context.getBooleanAttribute("flushCache", !isSelect);
+    // 获取 useCache 的属性值，如果是select则每次查询都会走缓存，如果不是则不会使用到缓存
     boolean useCache = context.getBooleanAttribute("useCache", isSelect);
     boolean resultOrdered = context.getBooleanAttribute("resultOrdered", false);
 

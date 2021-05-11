@@ -99,11 +99,11 @@ public class XMLMapperBuilder extends BaseBuilder {
       // 把 Mapper 与 名称空间进行绑定
       bindMapperForNamespace();
     }
-    // 执行未完成的 ResultMap
+    // 解析 ResultMap
     parsePendingResultMaps();
-    // 执行未完成的 CacheRef
+    // 解析 CacheRef
     parsePendingCacheRefs();
-    // 执行未完成的 Statement
+    // 解析 Statement
     parsePendingStatements();
   }
 
@@ -192,6 +192,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       Iterator<XMLStatementBuilder> iter = incompleteStatements.iterator();
       while (iter.hasNext()) {
         try {
+          // 解析每个Statement
           iter.next().parseStatementNode();
           iter.remove();
         } catch (IncompleteElementException e) {

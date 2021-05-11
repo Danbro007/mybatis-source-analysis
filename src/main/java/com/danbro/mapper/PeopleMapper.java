@@ -1,5 +1,6 @@
 package com.danbro.mapper;
 
+import com.danbro.plugins.Page;
 import com.danbro.pojo.People;
 import org.apache.ibatis.annotations.CacheNamespace;
 import org.apache.ibatis.annotations.Select;
@@ -25,5 +26,8 @@ public interface PeopleMapper {
 
     @Select("select * from people")
     People selectListAll();
+
+    @Select("select * from people")
+    List<People> selectListByPage(Page page);
 
 }

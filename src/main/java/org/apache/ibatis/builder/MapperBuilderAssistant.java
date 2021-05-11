@@ -121,6 +121,17 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
   }
 
+  /**
+   *
+   * @param typeClass 缓存的实现类
+   * @param evictionClass 内存淘汰策略
+   * @param flushInterval 清空缓存的时间间隔
+   * @param size 缓存大小
+   * @param readWrite 是否支持读写
+   * @param blocking 是否开启了缓存穿透
+   * @param props 属性
+   * @return
+   */
   public Cache useNewCache(Class<? extends Cache> typeClass,
       Class<? extends Cache> evictionClass,
       Long flushInterval,

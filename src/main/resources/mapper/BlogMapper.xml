@@ -71,5 +71,9 @@
         </foreach>
     </select>
 
+    <select id="selectListByPage" parameterType="com.danbro.plugins.Page">
+        select * from blog
+    </select>
+
 
 </mapper>

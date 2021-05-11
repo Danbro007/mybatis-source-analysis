@@ -124,17 +124,24 @@ public class MapperAnnotationBuilder {
     this.type = type;
   }
 
+  /**
+   * 解析注解
+   */
   public void parse() {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
+      // 加载XML文件
       loadXmlResource();
       // 把 resource 添加到 loadedResources，既mapper.xml标记为已读取
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
+      // 解析缓存
       parseCache();
+      // 解析缓存的引用
       parseCacheRef();
       // 获取我们要解析的mapper的所有方法
       Method[] methods = type.getMethods();
+      // 解析带有 @Select、@Update、@Delete 和 @Insert 注解的方法
       for (Method method : methods) {
         try {
           // issue #237
@@ -195,11 +202,15 @@ public class MapperAnnotationBuilder {
   }
 
   private void parseCache() {
+    // 获取@CacheNamespace
     CacheNamespace cacheDomain = type.getAnnotation(CacheNamespace.class);
     if (cacheDomain != null) {
+      // 获取设置的二级缓存大小
       Integer size = cacheDomain.size() == 0 ? null : cacheDomain.size();
+      // 自动清空缓存的时间间隔
       Long flushInterval = cacheDomain.flushInterval() == 0 ? null : cacheDomain.flushInterval();
       Properties props = convertToProperties(cacheDomain.properties());
+      // 在 MapperBuilderAssistant 里创建一个当前Mapper的缓存
       assistant.useNewCache(cacheDomain.implementation(), cacheDomain.eviction(), flushInterval, size, cacheDomain.readWrite(), cacheDomain.blocking(), props);
     }
   }
@@ -217,18 +228,24 @@ public class MapperAnnotationBuilder {
   }
 
   private void parseCacheRef() {
+    // 获取@CacheNamespaceRef注解
     CacheNamespaceRef cacheDomainRef = type.getAnnotation(CacheNamespaceRef.class);
     if (cacheDomainRef != null) {
+      // 引用的缓存空间的Mapper类型
       Class<?> refType = cacheDomainRef.value();
+      // 引用的缓存空间名
       String refName = cacheDomainRef.name();
+      // 对CacheNamespaceRef注解的值进行判定
       if (refType == void.class && refName.isEmpty()) {
         throw new BuilderException("Should be specified either value() or name() attribute in the @CacheNamespaceRef");
       }
       if (refType != void.class && !refName.isEmpty()) {
         throw new BuilderException("Cannot use both value() and name() attribute in the @CacheNamespaceRef");
       }
+      // 如果引用的缓存空间的Mapper类型不是void类型则返回这个Mapper的类型，否则返回引用的缓存空间名
       String namespace = (refType != void.class) ? refType.getName() : refName;
       try {
+        // 创建缓存空间引用
         assistant.useCacheRef(namespace);
       } catch (IncompleteElementException e) {
         configuration.addIncompleteCacheRef(new CacheRefResolver(assistant, namespace));
@@ -305,14 +322,18 @@ public class MapperAnnotationBuilder {
     }
     return null;
   }
-  // 解析 Statement
+
+  /**
+   * 解析Mapper接口
+   */
   void parseStatement(Method method) {
     // 方法参数的类型
     Class<?> parameterTypeClass = getParameterType(method);
     LanguageDriver languageDriver = getLanguageDriver(method);
-    // 从注解获取动态sql
+    // 从注解获取动态sql，获取不到则需要xml文件获取
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
+      // 解析@Options注解
       Options options = method.getAnnotation(Options.class);
       final String mappedStatementId = type.getName() + "." + method.getName();
       Integer fetchSize = null;

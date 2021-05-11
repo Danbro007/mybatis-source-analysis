@@ -60,7 +60,7 @@ public class MapperRegistry {
   }
 
   /**
-   * 添加 Mapper 到 MapperRegistry 里。
+   * 添加 Mapper 接口到 MapperRegistry 里。
    * @param type 要添加的 Mapper 类型
    * @param <T>
    */
@@ -74,7 +74,7 @@ public class MapperRegistry {
       // Mapper 加载成功标志位
       boolean loadCompleted = false;
       try {
-        // 把 Mapper 类型为 key，Mapper 的代理工厂为 value 放入 MapperRegistry。
+        // 把 Mapper 类型当做 key，Mapper 的代理工厂为 value 放入 MapperRegistry。
         // MapperProxyFactory 就只有一个成员变量即你要代理的接口
         knownMappers.put(type, new MapperProxyFactory<>(type));
         // It's important that the type is added before the parser is run
@@ -82,6 +82,7 @@ public class MapperRegistry {
         // mapper parser. If the type is already known, it won't try.
         //重要的是，必须在运行解析器之前添加类型，否则映射器解析器可能会自动尝试进行绑定。如果类型是已知的，则不会尝试。
         MapperAnnotationBuilder parser = new MapperAnnotationBuilder(config, type);
+        // 执行解析
         parser.parse();
         loadCompleted = true;
       } finally {

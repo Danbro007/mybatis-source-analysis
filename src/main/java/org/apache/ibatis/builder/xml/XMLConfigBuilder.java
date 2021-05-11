@@ -132,6 +132,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       // 解析<typeHandlers> 即下面的子标签<typeHandler>
       typeHandlerElement(root.evalNode("typeHandlers"));
+      // 解析 <mappers>
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -425,12 +426,16 @@ public class XMLConfigBuilder extends BaseBuilder {
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
             // 开始解析
             mapperParser.parse();
-          } else if (resource == null && url != null && mapperClass == null) {
+          }
+          // 远程访问获取要加载的xml文件
+          else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);
             InputStream inputStream = Resources.getUrlAsStream(url);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
             mapperParser.parse();
-          } else if (resource == null && url == null && mapperClass != null) {
+          }
+          // 接口mapper
+          else if (resource == null && url == null && mapperClass != null) {
             // 用类加载器加载出 Mapper 接口
             Class<?> mapperInterface = Resources.classForName(mapperClass);
             // 把 Mapper 接口放入 mapperRegistry

@@ -36,15 +36,29 @@ public final class MappedStatement {
   private String resource;
   private Configuration configuration;
   private String id;
+
+  /**
+   * 从数据库返回的数据量
+   */
   private Integer fetchSize;
+
   private Integer timeout;
   private StatementType statementType;
   private ResultSetType resultSetType;
   private SqlSource sqlSource;
+  /**
+   *  二级缓存
+   */
   private Cache cache;
   private ParameterMap parameterMap;
   private List<ResultMap> resultMaps;
+  /**
+   * 是否清空一级缓存和二级缓存
+   */
   private boolean flushCacheRequired;
+  /**
+   *  是否使用二级缓存，如果开启二级缓存则在进行增删改操作时不会清空二级缓存
+   */
   private boolean useCache;
   private boolean resultOrdered;
   private SqlCommandType sqlCommandType;

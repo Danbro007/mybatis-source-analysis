@@ -73,7 +73,10 @@ public class XMLScriptBuilder extends BaseBuilder {
     }
     return sqlSource;
   }
-  // 解析动态SQL为MixedSqlNode
+
+  /**
+   * 解析动态SQL为MixedSqlNode
+   */
   protected MixedSqlNode parseDynamicTags(XNode node) {
     List<SqlNode> contents = new ArrayList<>();
     // 获取当前节点的子节点

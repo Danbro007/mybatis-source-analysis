@@ -3,6 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+
     <!--引入外部配置源-->
     <properties resource="database.properties"/>
     <settings>
@@ -32,12 +33,17 @@
         <typeAlias type="com.danbro.pojo.Commenter" alias="Commenter"/>
         <typeAlias type="com.danbro.pojo.Author" alias="Author"/>
         <typeAlias type="com.danbro.pojo.Order" alias="Order"/>
+        <typeAlias type="com.danbro.plugins.PageInterceptor" alias="PageInterceptor"/>
     </typeAliases>
 
     <typeHandlers>
         <!--使用自定义的typeHandler-->
         <typeHandler handler="com.danbro.typeHandlers.MyTypeHandler"/>
     </typeHandlers>
+
+    <plugins>
+        <plugin interceptor="PageInterceptor"/>
+    </plugins>
 
     <!--多环境配置-->
     <environments default="test">
@@ -61,13 +67,14 @@
         </environment>
     </environments>
 
+
     <mappers>
 <!--        <mapper resource="mapper/BookMapper.xml"/>-->
 <!--        <mapper resource="mapper/UserMapper.xml"/>-->
 <!--        <mapper resource="mapper/StudentMapper.xml"/>-->
 <!--        <mapper resource="mapper/TeacherMapper.xml"/>-->
-        <mapper resource="mapper/BlogMapper.xml"/>
-        <mapper resource="mapper/OrderMapper.xml"/>
-<!--        <package name="com.danbro.mapper"/>-->
+<!--        <mapper resource="mapper/BlogMapper.xml"/>-->
+<!--        <mapper resource="mapper/OrderMapper.xml"/>-->
+        <package name="com.danbro.mapper"/>
     </mappers>
 </configuration>
