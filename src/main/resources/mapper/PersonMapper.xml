@@ -4,9 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.danbro.mapper.PersonMapper">
     <!--声明缓存空间-->
-        <cache/>
+    <cache/>
     <!--引用缓存空间-->
-<!--    <cache-ref namespace="com.danbro.mapper.UserMapper"/>-->
+    <!--    <cache-ref namespace="com.danbro.mapper.UserMapper"/>-->
 
     <select id="getPersonById" resultType="Person">
         select *
@@ -37,4 +37,14 @@
         set name = #{name}
         where id = #{id}
     </update>
+
+    <!--添加记录后返回主键ID-->
+    <insert id="insertPerson" keyProperty="id" useGeneratedKeys="true" keyColumn="id">
+        INSERT INTO person(name, age)
+        VALUES (#{name}, #{age})
+    </insert>
+
+    <select id="selectListByCondition" resultType="Person">
+        select * from person where name = #{arg0} and age = #{arg1}
+    </select>
 </mapper>

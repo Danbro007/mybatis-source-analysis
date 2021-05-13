@@ -40,6 +40,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   private static final Method privateLookupInMethod;
   private final SqlSession sqlSession;
   private final Class<T> mapperInterface;
+  /**
+   * 方法缓存区，缓存接口的方法
+   */
   private final Map<Method, MapperMethod> methodCache;
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
@@ -73,13 +76,19 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
     lookupConstructor = lookup;
   }
-  // 代理对象会调用这个方法
+
+  /**
+   * 调用Mapper的方法会调用
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // 当前执行方法的类是不是类
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
-      } else if (method.isDefault()) {
+      }
+      // 判断当前方法是不是接口的default方法
+      else if (method.isDefault()) {
         if (privateLookupInMethod == null) {
           return invokeDefaultMethodJava8(proxy, method, args);
         } else {
@@ -89,7 +98,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
-    // 如果缓存里没有当前 Mapper 的方法则放入缓存里并返回一个 MapperMethod 对象
+    // 如果缓存里没有当前 Mapper 的方法则放入缓存里并返回一个 MapperMethod 对象，MappedMethod 封装接口方法的信息。
     final MapperMethod mapperMethod = cachedMapperMethod(method);
     // 执行代理的 Mapper 方法
     return mapperMethod.execute(sqlSession, args);

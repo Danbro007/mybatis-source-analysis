@@ -77,7 +77,10 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     ps.execute();
     return resultSetHandler.handleCursorResultSets(ps);
   }
-  // 这里的 connection 是一个代理对象
+
+  /**
+   * 这里的 connection 是一个代理对象
+   */
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     // 获取动态 SQL 语句

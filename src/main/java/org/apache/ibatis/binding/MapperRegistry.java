@@ -60,7 +60,7 @@ public class MapperRegistry {
   }
 
   /**
-   * 添加 Mapper 接口到 MapperRegistry 里。
+   * 解析接口上所有的方法并生成对应MappedStatement添加到Configuration里
    * @param type 要添加的 Mapper 类型
    * @param <T>
    */

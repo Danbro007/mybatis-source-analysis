@@ -16,7 +16,7 @@ import java.util.List;
 public class BookMapperTest {
     private Logger logger = Logger.getLogger(BookMapperTest.class);
     @Test
-    public void test1() throws InterruptedException {
+    public void test1() {
         SqlSession sqlSession = MybatisUtils.getSqlSession();
         List<Book> books = sqlSession.getMapper(BookMapper.class).getBooks();
         books.forEach(System.out::println);

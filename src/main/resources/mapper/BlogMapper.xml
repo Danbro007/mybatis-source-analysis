@@ -13,21 +13,28 @@
         <collection property="commentList" column="id" select="selectCommentByBlogId" fetchType="eager"/>
     </resultMap>
 
-    <resultMap id="commentMap" type="Comment" autoMapping="true">
-        <id column="id" property="id"/>
-        <result column="content" property="content"/>
-        <association property="blog" column="blog_id" select="selectBlogById" fetchType="eager"/>
-    </resultMap>
-    <select id="selectBlogById" resultMap="blogMap">
-        select *
-        from blog
-        where id = #{id}
-    </select>
     <select id="selectCommentByBlogId" resultMap="commentMap">
         select *
         from comment
         where blog_id = #{blodId}
     </select>
+
+    <resultMap id="commentMap" type="Comment" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <association property="blog" column="blog_id" select="selectBlogById" fetchType="eager"/>
+    </resultMap>
+
+    <select id="selectBlogById" resultMap="blogMap">
+        select *
+        from blog
+        where id = #{id}
+    </select>
+
+
+
+
+
 
     <select id="selectAuthorById" resultType="Author">
         select *
@@ -72,7 +79,8 @@
     </select>
 
     <select id="selectListByPage" parameterType="com.danbro.plugins.Page">
-        select * from blog
+        select *
+        from blog
     </select>
 
 

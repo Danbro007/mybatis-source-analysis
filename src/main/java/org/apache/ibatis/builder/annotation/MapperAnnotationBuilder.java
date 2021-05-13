@@ -125,12 +125,12 @@ public class MapperAnnotationBuilder {
   }
 
   /**
-   * 解析注解
+   * 解析
    */
   public void parse() {
     String resource = type.toString();
     if (!configuration.isResourceLoaded(resource)) {
-      // 加载XML文件
+      // 先加载XML文件
       loadXmlResource();
       // 把 resource 添加到 loadedResources，既mapper.xml标记为已读取
       configuration.addLoadedResource(resource);
@@ -146,6 +146,7 @@ public class MapperAnnotationBuilder {
         try {
           // issue #237
           if (!method.isBridge()) {
+            // 解析方法并生成MappedStatement
             parseStatement(method);
           }
         } catch (IncompleteElementException e) {
@@ -324,70 +325,94 @@ public class MapperAnnotationBuilder {
   }
 
   /**
-   * 解析Mapper接口
+   * 解析Mapper接口上各个注解参数
    */
   void parseStatement(Method method) {
     // 方法参数的类型
     Class<?> parameterTypeClass = getParameterType(method);
     LanguageDriver languageDriver = getLanguageDriver(method);
-    // 从注解获取动态sql，获取不到则需要xml文件获取
+    // 从注解获取数据库连接池，获取不到则需要xml文件获取
     SqlSource sqlSource = getSqlSourceFromAnnotations(method, parameterTypeClass, languageDriver);
     if (sqlSource != null) {
       // 解析@Options注解
       Options options = method.getAnnotation(Options.class);
+      // 生成MappedStatementID，就是字符串拼接，在接口和方法之间加了个 . 符号
       final String mappedStatementId = type.getName() + "." + method.getName();
       Integer fetchSize = null;
       Integer timeout = null;
+      // Statement类型
       StatementType statementType = StatementType.PREPARED;
+      // 获取默认的结果集类型
       ResultSetType resultSetType = configuration.getDefaultResultSetType();
+      // SQL语句的类型
       SqlCommandType sqlCommandType = getSqlCommandType(method);
+      // 是否是查询语句
       boolean isSelect = sqlCommandType == SqlCommandType.SELECT;
+      // 是查询语句则不会清空缓存
       boolean flushCache = !isSelect;
+      // 是查询语句则查询的视乎会查询缓存
       boolean useCache = isSelect;
-
+      // 注解生成器
       KeyGenerator keyGenerator;
       String keyProperty = null;
       String keyColumn = null;
+      // 获取生成策略，Insert或者Update操作会执行主键生成策略
       if (SqlCommandType.INSERT.equals(sqlCommandType) || SqlCommandType.UPDATE.equals(sqlCommandType)) {
         // first check for SelectKey annotation - that overrides everything else
+        // 获取到 @SelectKey 注解
         SelectKey selectKey = method.getAnnotation(SelectKey.class);
         if (selectKey != null) {
+          //有@Select注解说明要要执行主键生成策略
           keyGenerator = handleSelectKeyAnnotation(selectKey, mappedStatementId, getParameterType(method), languageDriver);
           keyProperty = selectKey.keyProperty();
         } else if (options == null) {
+          // 到配置文件获取当前 Statement 的 useGeneratedKeys 的属性值，如果开启了则使用Jdbc3KeyGenerator策略否则不使用主键生成策略
           keyGenerator = configuration.isUseGeneratedKeys() ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
         } else {
+          // 获取@Opions注解的 useGeneratedKeys的值，如果为true则执行Jdbc3KeyGenerator注解生成策略
           keyGenerator = options.useGeneratedKeys() ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
+          // 要生成主键的对象属性
           keyProperty = options.keyProperty();
           keyColumn = options.keyColumn();
         }
       } else {
+        // 不执行生成策略
         keyGenerator = NoKeyGenerator.INSTANCE;
       }
-
+      // @Options 的 flushCache 是否开启了
       if (options != null) {
         if (FlushCachePolicy.TRUE.equals(options.flushCache())) {
           flushCache = true;
         } else if (FlushCachePolicy.FALSE.equals(options.flushCache())) {
           flushCache = false;
         }
+        // 读取 useCache 属性
         useCache = options.useCache();
+        // fetchSize
         fetchSize = options.fetchSize() > -1 || options.fetchSize() == Integer.MIN_VALUE ? options.fetchSize() : null; //issue #348
+        // timeout
         timeout = options.timeout() > -1 ? options.timeout() : null;
+        // statementType
         statementType = options.statementType();
+        // resultSetType
         if (options.resultSetType() != ResultSetType.DEFAULT) {
           resultSetType = options.resultSetType();
         }
       }
 
       String resultMapId = null;
+      // 获取 @ResultMap 注解
       ResultMap resultMapAnnotation = method.getAnnotation(ResultMap.class);
+      // 如果是@ResultMap注解形式的
       if (resultMapAnnotation != null) {
+        // 转换成resultMapId
         resultMapId = String.join(",", resultMapAnnotation.value());
       } else if (isSelect) {
+        // 如果不是注解行的并且是查询操作则解析方法上的其他注解的参数生成resultMapId
         resultMapId = parseResultMap(method);
       }
-
+      // 生成 MappedStatement 并添加到 configuration 里，以便被全局使用。
+      // 其实真正交给MappedStatement#Budiler负责创建MappedStatement
       assistant.addMappedStatement(
           mappedStatementId,
           sqlSource,

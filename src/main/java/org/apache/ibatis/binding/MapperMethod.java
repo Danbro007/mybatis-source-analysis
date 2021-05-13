@@ -234,9 +234,15 @@ public class MapperMethod {
     // SQL的类型
     private final SqlCommandType type;
 
+    /**
+     * 通过接口和方法拼接生成 StatementId 到 configuration 查找到对应的 MappedStatement
+     */
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
+      // 方法名
       final String methodName = method.getName();
+      // 方法所属的类
       final Class<?> declaringClass = method.getDeclaringClass();
+      // 通过 StatementId 到 configuration 里获取到对应的 MappedStatement
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
       if (ms == null) {
@@ -300,6 +306,7 @@ public class MapperMethod {
     private final ParamNameResolver paramNameResolver;
 
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
+      // 解析出返回类型
       Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, mapperInterface);
       if (resolvedReturnType instanceof Class<?>) {
         this.returnType = (Class<?>) resolvedReturnType;

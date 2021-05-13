@@ -647,7 +647,7 @@ public class Configuration {
         } else {
             executor = new SimpleExecutor(this, transaction);
         }
-        // 如果开启了缓存则把刚刚创建的执行器添加缓存功能
+        // 如果开启了缓存则把刚刚创建的执行器添加缓存功能(装饰器模式)
         if (cacheEnabled) {
             executor = new CachingExecutor(executor);
         }

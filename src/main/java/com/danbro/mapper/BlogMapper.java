@@ -2,6 +2,7 @@ package com.danbro.mapper;
 
 import java.util.List;
 
+import com.danbro.plugins.Page;
 import com.danbro.pojo.Author;
 import com.danbro.pojo.Blog;
 import com.danbro.pojo.Comment;
@@ -26,4 +27,6 @@ public interface BlogMapper {
     List<Comment> selectCommentByBlogId(Integer id);
 
     List<Blog> selectBlogInIdList(List<Integer> list);
+
+    List<Blog> selectListByPage(Page page);
 }

@@ -305,6 +305,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
 
     MappedStatement statement = statementBuilder.build();
+    // 添加到Configuration里
     configuration.addMappedStatement(statement);
     return statement;
   }

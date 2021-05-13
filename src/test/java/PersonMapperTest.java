@@ -5,6 +5,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
+import java.lang.invoke.MutableCallSite;
+import java.util.List;
+
 /**
  * @Classname BookMapperTest
  * @Description TODO
@@ -63,5 +66,25 @@ public class PersonMapperTest {
         System.out.println("personMapper1读取数据: " + personMapper1.getPersonById(1));
         // personMapper2 会重新访问数据库
         System.out.println("personMapper2读取数据: " + personMapper2.getPersonById(1));
+    }
+
+    /**
+     * 测试添加一条记录后返会记录的ID
+     */
+    @Test
+    public void test04(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession(true);
+        PersonMapper personMapper = sqlSession.getMapper(PersonMapper.class);
+        Person person = new Person().setName("Jack").setAge(32);
+        personMapper.insertPerson(person);
+        System.out.println(person.getId());
+    }
+
+    @Test
+    public void test05(){
+        SqlSession sqlSession = MybatisUtils.getSqlSession(true);
+        PersonMapper personMapper = sqlSession.getMapper(PersonMapper.class);
+        List<Person> personList = personMapper.selectListByCondition("Jack", 32);
+        personList.forEach(System.out::println);
     }
 }

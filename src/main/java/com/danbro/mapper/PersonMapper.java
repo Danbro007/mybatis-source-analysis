@@ -7,6 +7,8 @@ import org.apache.ibatis.annotations.CacheNamespaceRef;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.cache.Cache;
 
+import java.util.List;
+
 /**
  * @author Danrbo
  * @Classname PersonMapper
@@ -26,4 +28,8 @@ public interface PersonMapper {
     void updatePersonById(Person person);
 
     void updatePersonNameById(String name, Integer id);
+
+    void insertPerson(Person person);
+
+    List<Person> selectListByCondition(String name,Integer age);
 }

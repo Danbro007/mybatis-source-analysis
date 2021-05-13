@@ -103,7 +103,10 @@ public class XMLConfigBuilder extends BaseBuilder {
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
-  // 解析配置文件,按标签顺序解析配置文件，解析出的配置放入 configuration 对象里。
+
+  /**
+   * 解析配置文件,按标签顺序解析配置文件，解析出的配置放入 configuration 对象里。
+   */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
@@ -111,8 +114,9 @@ public class XMLConfigBuilder extends BaseBuilder {
       propertiesElement(root.evalNode("properties"));
       // 解析<settings>标签
       Properties settings = settingsAsProperties(root.evalNode("settings"));
+      // 加载 <settings> 里自定义的 vfsImpl 属性值
       loadCustomVfs(settings);
-      // 加载自定义的日志配置
+      // 加载 <settings> 里自定义的日志配置 logImpl
       loadCustomLogImpl(settings);
       // 解析 <typeAliases> 标签，遍历包的别名把别名放入别名注册中心里
       typeAliasesElement(root.evalNode("typeAliases"));
@@ -418,6 +422,7 @@ public class XMLConfigBuilder extends BaseBuilder {
           // 获取 class 属性 例如：XXX.XXX.XXXMapper
           String mapperClass = child.getStringAttribute("class");
           // 这三种属性只能取一个
+          // 说明是mapper是xml配置文件形式
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             // 读取 XXXMapper.xml 文件并转换成输入流
@@ -427,14 +432,14 @@ public class XMLConfigBuilder extends BaseBuilder {
             // 开始解析
             mapperParser.parse();
           }
-          // 远程访问获取要加载的xml文件
+          // 远程访问获取要加载的Mapper xml文件
           else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);
             InputStream inputStream = Resources.getUrlAsStream(url);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
             mapperParser.parse();
           }
-          // 接口mapper
+          // Mapper 是 java 接口形式的
           else if (resource == null && url == null && mapperClass != null) {
             // 用类加载器加载出 Mapper 接口
             Class<?> mapperInterface = Resources.classForName(mapperClass);
